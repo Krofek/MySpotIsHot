@@ -26,8 +26,8 @@ echo
 
 
 #GLOBAL VARS
-dnsmasq=dnsmasq.conf
-hostapd=hostapd.conf
+dnsmasq=/etc/dnsmasq.conf
+hostapd=/etc/hostapd.conf
 
 #BACKUP DNSMASQ
 f_backup() {
@@ -55,7 +55,7 @@ fi
 
 #CHECK DNSMASQ.CONF
 f_showdns() {
-egrep -xq "^interface=.*|^dhcp-range=.*" dnsmasq.conf
+egrep -xq "^interface=.*|^dhcp-range=.*" $dnsmasq
 }
 
 #DNSMASQ FUNC
