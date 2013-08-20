@@ -3,9 +3,13 @@
 #GLOBAL VARS
 dnsmasq=/etc/dnsmasq.conf
 hostapd=/etc/hostapd.conf
+start=~/start.sh
 
 #BACKUP DNSMASQ
 f_backup() {
+echo
+echo "1.) Backup or restore $dnsmasq!"
+echo
 if [ ! -f ${dnsmasq}.bak ]; then
 	echo "$dnsmasq isn't backed up yet, please press any key to backup now!"
 	read -sn 1
@@ -35,8 +39,13 @@ egrep -xq "^interface=.*|^dhcp-range=.*" $dnsmasq
 
 #DNSMASQ FUNC
 f_dnsmasq() {
-echo "Setting up /etc/dnsmasq.conf"
+echo
+clear
+echo "2.) Setting up /etc/dnsmasq.conf!"
+echo
 if f_showdns; then
+	echo "Current settings:"
+	echo
 	cat $dnsmasq | egrep "^bind-interfaces|^interface=.*|^dhcp-range=.*"
 else
     	echo "/etc/dnsmasq.conf not yet configured"
@@ -44,6 +53,7 @@ else
 fi
 
 #Dnsmasq config
+echo
 echo "Press N for new /etc/dnsmasq.conf settings or Enter to use the ones above:"
 read -sn 1 cdnsmasq
 if [[ $cdnsmasq = "" ]] && f_showdns; then 
@@ -87,14 +97,17 @@ fi
 
 #HOSTAPD FUNC
 f_hostapd() {
-echo "Setting up /etc/hostapd.conf"
+echo
+clear
+echo "3.) Setting up /etc/hostapd.conf!"
 echo
 
 if [ ! -f $hostapd ]; then
 	echo "File $hostapd does not exist"
 	echo
 else
-	echo "hostapd.conf:"
+	echo "Current settings:"
+	echo
 	cat $hostapd
 	echo
 fi
@@ -138,6 +151,7 @@ elif [[ $chostapd = "N" || $chostapd = "n" ]]; then
 	#Radio mode
 	echo "Chose a radio mode between b, g, n [Default: g]"
 	read -n 1 hwmode
+	echo
 	if [[ $hwmode = "" ]]; then
 		unset hwmode
 	fi
@@ -145,12 +159,16 @@ elif [[ $chostapd = "N" || $chostapd = "n" ]]; then
 	#WPA type
 	echo "Enable WPA2 only (1 for WPA, 2 for WPA2, 3 for WPA + WPA2)[Default: 2]"
 	read -n 1 wpa
+	echo
 	if [[ $wpa = "" ]]; then
 		unset wpa
 	fi
 
 	sudo rm -rf $hostapd
 	sudo touch $hostapd
+	clear
+	echo "New $hostapd created! Your settings:"
+	echo
 	echo "interface=${wlan:-wlan0}
 driver=nl80211
 ssid=$ssid
@@ -162,18 +180,88 @@ ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]
 wpa=${wpa:-2}
 wpa_passphrase=$pass
 wpa_pairwise=TKIP CCMP" | sudo tee -a $hostapd
+	echo
+	echo "Press any key to continue to the next step!"
+	read -sn 1
 	break
 fi
 }
 
 #CREATE EXECUTABLE SCRIPT -> check if it exists, create new, show the few changeable variables...
-#f_execute() {
-#}
+f_crstart() {
+#Chose wlan adapter
+echo
+iwconfig 2>&1 | grep wlan
+echo
+echo "Choose the wlan interface adapter from the ones above [Default: wlan0]"
+read wlan
+if [[ $wlan = "" ]]; then
+	unset wlan
+fi
+
+#Chose eth adapter
+echo
+ifconfig | grep -i ethernet
+echo
+echo "Choose the ethernet adapter connected to the internet from the ones above [Default: eth0]"
+read eth
+if [[ $eth = "" ]]; then
+	unset eth
+fi
+
+touch $start
+echo "#!/bin/bash
+rfkill unblock wifi
+sudo ifconfig ${wlan:-wlan0} 192.168.150.1
+sudo service dnsmasq restart
+sudo sysctl net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o ${eth:-eth0} -j MASQUERADE
+sudo hostapd /etc/hostapd.conf
+sudo iptables -D POSTROUTING -t nat -o ${eth:-eth0} -j MASQUERADE
+sudo sysctl net.ipv4.ip_forward=0
+sudo service dnsmasq stop
+sudo service hostapd stop" > $start
+chmod u+x $start
+}
+
+#CHECK IF START SCRIPT EXISTS
+f_execute() {
+echo
+clear
+echo "4.) Startup script setup!"
+echo
+if [ ! -f $start ]; then
+	echo "$start script isn't created yet, please press any key to create it now!"
+	read -sn 1
+	echo
+	f_crstart
+	echo "$start script created!"
+	break
+else
+	echo "Start script already created!" 
+	echo
+	echo "Press Enter to continue setup, V to view the existing one or N to create a new one!"
+	read -sn 1 crstart
+	if [[ $crstart = "" ]]; then
+		break
+	elif [[ $crstart = "n" || $crstart = "N" ]]; then
+		f_crstart
+		echo "$start script created!"
+	elif [[ $crstart = "v" || $crstart = "V" ]]; then
+		clear
+		echo "Your $start script settings:"
+		echo
+		cat $start
+		echo
+		echo "Press any key to continue!"
+		read -sn 1
+	fi
+fi
+}
 
 #DO YOU WANT TO START THE HOTSPOT ON SYSTEM STARTUP?
 #f_startup() {
-# ifconfig | grep -i ethernet
-#{$eth:-eth0}
+#
 #}
 
 ###################################################################################
@@ -219,8 +307,15 @@ do
 	f_hostapd
 done
 
+#EXEC START SCRIPT
+while :
+do
+	f_execute
+done
+
 #FINISH SETUP
 echo
 echo "You're all done, press any key to exit now!"
 read -sn 1
 echo
+clear
