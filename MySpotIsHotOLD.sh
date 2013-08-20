@@ -325,6 +325,22 @@ exit 0' | sudo tee -a $service &>/dev/null
 sudo chmod u+x $service
 }
 
+#SERVICE RUN
+
+f_serstart() {
+clear
+echo "6.) If you want to start the service right away press S or Enter to finish!"
+read -n 1 sstart
+echo
+if [[ $sstart = "" ]]; then
+	break
+elif [[ $sstart = "s" || $sstart = "S" ]]; then
+	sudo $start & 
+	echo "Your hotspot is up and running...probably xD"
+	break
+fi
+}
+
 #SERVICE SETUP
 f_service() {
 echo
@@ -340,6 +356,8 @@ if [ ! -f $service ]; then
 		echo "MySpotIsHot service created!"
 		echo
 		echo "Usage: service myspotishot {start|stop|restart|reload|status}"
+		echo
+		f_serstart
 		break
 	elif [[ $servicecr = "" || $servicecr = "" ]]; then
 		break
@@ -354,24 +372,13 @@ else
 		sudo rm -rf $service
 		echo "MySpotIsHot service deleted!"
 	elif [[ $servicedel = "" || $servicedel = "" ]]; then
+		f_serstart
 		break
 	fi
 fi
 }
 
-f_serstart() {
-clear
-echo "6.) If you want to start the service right away press S or Enter to finish!"
-read -n 1 sstart
-echo
-if [[ $sstart = "" ]]; then
-	break
-elif [[ $sstart = "s" || $sstart = "S" ]]; then
-	sudo $start & 
-	echo "Your hotspot is up and running...probably xD"
-	break
-fi
-}
+
 
 ###################################################################################
 ########################START SCRIPT!!!############################################
@@ -411,12 +418,6 @@ done
 while :
 do
 	f_service
-done
-
-#EXEC CREATE SERVICE
-while :
-do
-	f_serstart
 done
 
 #FINISH SETUP

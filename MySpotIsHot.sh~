@@ -359,7 +359,7 @@ else
 fi
 }
 
-f_serstart() {
+serstart() {
 clear
 echo "6.) If you want to start the service right away press S or Enter to finish!"
 read -n 1 sstart
