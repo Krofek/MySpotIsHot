@@ -7,8 +7,7 @@ clear
 echo "Welcome to MySpotIsHot!"
 echo
 
-if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq
-then
+if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq; then
 	sudo apt-get update
 	if ! dpkg-query -W hostapd; then sudo apt-get install hostapd
 	elif ! dpkg-query -W dnsmasq; then sudo apt-get install dnsmasq
