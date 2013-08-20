@@ -3,7 +3,8 @@
 #GLOBAL VARS
 dnsmasq=/etc/dnsmasq.conf
 hostapd=/etc/hostapd.conf
-start=~/start.sh
+start=~/myspotishot.sh
+service=/etc/init.d/myspotishot
 
 ###################################################################################
 ################################FUNCTIONS!!!#######################################
@@ -283,10 +284,82 @@ else
 fi
 }
 
-#DO YOU WANT TO START THE HOTSPOT ON SYSTEM STARTUP?
-#f_startup() {
+#CREATE SERVICE
+f_initd() {
+sudo rm -rf $service
+sudo touch $service
+echo '#!/bin/bash
 #
-#}
+# MySpotIsHot Service Init
+start() {
+        echo "Starting MySpotIsHot service: "
+        sudo sh '$start' &
+        sudo touch /var/lock/myspotishot.lock
+        echo
+}
+#Service STOP func
+stop() {
+        echo "Stopping MySpotIsHot service: "
+        sudo killproc myspotishot
+        sudo rm -rf /var/lock/myspotishot.lock
+        echo
+}
+# JUST IN CASE ;)
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status myspotishot
+        ;;
+  restart|reload|condrestart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|status}"
+        exit 1
+esac
+exit 0' | sudo tee -a $service &>/dev/null
+sudo chmod u+x $service
+}
+
+#SERVICE SETUP
+f_service() {
+echo
+clear
+echo "5.) MySpotIsHot service setup"
+echo
+if [ ! -f $service ]; then
+	echo "MySpotIsHot service not present, press C to create it or Enter if you want to start your hotspot manually!"
+	read -n 1 servicecr
+	echo
+	if [[ $servicecr = "c" || $servicecr = "C" ]]; then
+		f_initd
+		echo "MySpotIsHot service created!"
+		echo
+		echo "Usage: service myspotishot {start|stop|restart|reload|status}"
+		break
+	elif [[ $servicecr = "" || $servicecr = "" ]]; then
+		break
+	fi
+else
+	echo "MySpotIsHot service already installed. Usage: service myspotishot {start|stop|restart|reload|status}"
+	echo
+	echo "Press D to delete it or Enter to continue"
+	read -n 1 servicedel
+	echo
+	if [[ $servicedel = "d" || $servicedel = "D" ]]; then
+		sudo rm -rf $service
+		echo "MySpotIsHot service deleted!"
+	elif [[ $servicedel = "" || $servicedel = "" ]]; then
+		break
+	fi
+fi
+}
 
 ###################################################################################
 ########################START SCRIPT!!!############################################
@@ -313,11 +386,18 @@ do
 	f_hostapd
 done
 
-#EXEC START SCRIPT
+#EXEC CREATE START SCRIPT
 while :
 do
 	f_execute
 done
+
+#EXEC CREATE SERVICE
+while :
+do
+	f_service
+done
+
 
 #FINISH SETUP
 echo
