@@ -5,6 +5,30 @@ dnsmasq=/etc/dnsmasq.conf
 hostapd=/etc/hostapd.conf
 start=~/start.sh
 
+###################################################################################
+################################FUNCTIONS!!!#######################################
+###################################################################################
+
+#WELCOME
+f_welcome() {
+clear
+echo "Welcome to MySpotIsHot!"
+echo
+if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq; then
+	sudo apt-get update
+	if ! dpkg-query -W hostapd; then sudo apt-get install hostapd
+	elif ! dpkg-query -W dnsmasq; then sudo apt-get install dnsmasq
+	fi
+else
+	echo
+	echo "The required packages are installed!"
+fi
+echo
+
+#sudo service hostapd stop && sudo service dnsmasq stop
+#sudo update-rc.d hostapd disable && sudo update-rc.d dnsmasq disable
+}
+
 #BACKUP DNSMASQ
 f_backup() {
 echo
@@ -267,27 +291,9 @@ fi
 ###################################################################################
 ########################START SCRIPT!!!############################################
 ###################################################################################
-clear
-echo "Welcome to MySpotIsHot!"
-echo
 
-if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq; then
-	sudo apt-get update
-	if ! dpkg-query -W hostapd; then sudo apt-get install hostapd
-	elif ! dpkg-query -W dnsmasq; then sudo apt-get install dnsmasq
-	fi
-else
-	echo
-	echo "The required packages are installed!"
-fi
-echo
-
-#sudo service hostapd stop && sudo service dnsmasq stop
-#sudo update-rc.d hostapd disable && sudo update-rc.d dnsmasq disable
-
-###################################################################################
-########################EXECUTE FUNCTIONS!!!#######################################
-###################################################################################
+#EXEC WELCOME
+f_welcome
 
 #EXEC DNSMASQ
 while :
