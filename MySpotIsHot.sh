@@ -1,29 +1,5 @@
 #!/bin/bash
 
-###################################################################################
-########################START SCRIPT!!!############################################
-###################################################################################
-clear
-echo "Welcome to MySpotIsHot!"
-echo
-
-if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq; then
-	sudo apt-get update
-	if ! dpkg-query -W hostapd; then sudo apt-get install hostapd
-	elif ! dpkg-query -W dnsmasq; then sudo apt-get install dnsmasq
-	fi
-else
-	echo
-	echo "The required packages are installed!"
-fi
-echo
-
-#sudo apt-get install hostapd dnsmasq
-
-#sudo service hostapd stop && sudo service dnsmasq stop
-#sudo update-rc.d hostapd disable && sudo update-rc.d dnsmasq disable
-
-
 #GLOBAL VARS
 dnsmasq=/etc/dnsmasq.conf
 hostapd=/etc/hostapd.conf
@@ -33,7 +9,7 @@ f_backup() {
 if [ ! -f ${dnsmasq}.bak ]; then
 	echo "$dnsmasq isn't backed up yet, please press any key to backup now!"
 	read -sn 1
-	cp $dnsmasq ${dnsmasq}.bak
+	sudo cp $dnsmasq ${dnsmasq}.bak
 	echo "$dnsmasq backup created!"
 	echo
 	break
@@ -43,7 +19,7 @@ else
 	if [[ $restore = "" ]]; then
 		break
 	elif [[ $restore = "r" || $restore = "R" ]]; then
-		cp ${dnsmasq}.bak $dnsmasq
+		sudo cp ${dnsmasq}.bak $dnsmasq
 		break
 	else
 		echo "WTF, only 1 of 2 possible keys to press and you f*** it up..."
@@ -98,12 +74,12 @@ elif [[ $cdnsmasq = "N" || $cdnsmasq = "n" ]]; then
 	
 	#Write to /etc/dnsmasq.conf
 	if f_showdns; then
-		sed -i "s/^interface=.*/interface=${wlan:-wlan0}/" $dnsmasq
-		sed -i "s/^dhcp-range=.*/dhcp-range=${dhcp:-192.168.150.2,192.168.150.10}/" $dnsmasq
+		sudo sed -i "s/^interface=.*/interface=${wlan:-wlan0}/" $dnsmasq
+		sudo sed -i "s/^dhcp-range=.*/dhcp-range=${dhcp:-192.168.150.2,192.168.150.10}/" $dnsmasq
 	else
 		echo "bind-interfaces
 interface=$wlan
-dhcp-range=${dhcp:-192.168.150.2,192.168.150.10}" >> $dnsmasq
+dhcp-range=${dhcp:-192.168.150.2,192.168.150.10}" | sudo tee -a $dnsmasq
 	break
 	fi
 fi
@@ -111,7 +87,7 @@ fi
 
 #HOSTAPD FUNC
 f_hostapd() {
-echo Setting up /etc/hostapd.conf
+echo "Setting up /etc/hostapd.conf"
 echo
 
 if [ ! -f $hostapd ]; then
@@ -173,8 +149,8 @@ elif [[ $chostapd = "N" || $chostapd = "n" ]]; then
 		unset wpa
 	fi
 
-	rm -rf $hostapd
-	touch $hostapd
+	sudo rm -rf $hostapd
+	sudo touch $hostapd
 	echo "interface=${wlan:-wlan0}
 driver=nl80211
 ssid=$ssid
@@ -185,7 +161,7 @@ ieee80211n=1
 ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]
 wpa=${wpa:-2}
 wpa_passphrase=$pass
-wpa_pairwise=TKIP CCMP" > $hostapd
+wpa_pairwise=TKIP CCMP" | sudo tee -a $hostapd
 	break
 fi
 }
@@ -196,7 +172,30 @@ fi
 
 #DO YOU WANT TO START THE HOTSPOT ON SYSTEM STARTUP?
 #f_startup() {
+# ifconfig | grep -i ethernet
+#{$eth:-eth0}
 #}
+
+###################################################################################
+########################START SCRIPT!!!############################################
+###################################################################################
+clear
+echo "Welcome to MySpotIsHot!"
+echo
+
+if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq; then
+	sudo apt-get update
+	if ! dpkg-query -W hostapd; then sudo apt-get install hostapd
+	elif ! dpkg-query -W dnsmasq; then sudo apt-get install dnsmasq
+	fi
+else
+	echo
+	echo "The required packages are installed!"
+fi
+echo
+
+#sudo service hostapd stop && sudo service dnsmasq stop
+#sudo update-rc.d hostapd disable && sudo update-rc.d dnsmasq disable
 
 ###################################################################################
 ########################EXECUTE FUNCTIONS!!!#######################################
@@ -222,6 +221,6 @@ done
 
 #FINISH SETUP
 echo
-echo "Setup is completed, press any key to exit now!"
+echo "You're all done, press any key to exit now!"
 read -sn 1
 echo
