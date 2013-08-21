@@ -176,6 +176,9 @@ elif [[ $chostapd = "N" || $chostapd = "n" ]]; then
 	echo
 	if [[ $hwmode = "" ]]; then
 		unset hwmode
+	elif  [[ $hwmode = "n" ]]; then
+		unset hwmode
+		nmode="n"
 	fi
 
 	#WPA type
@@ -196,12 +199,15 @@ driver=nl80211
 ssid=$ssid
 hw_mode=${hwmode:-g}
 channel=${channel:-6}
-wmm_enabled=1
-ieee80211n=1
-ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]
 wpa=${wpa:-2}
 wpa_passphrase=$pass
 wpa_pairwise=TKIP CCMP" | sudo tee -a $hostapd
+	if  [[ $nmode = "n" ]]; then
+		unset nmode
+		echo "wmm_enabled=1
+ieee80211n=1
+ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]" | sudo tee -a $hostapd
+	fi
 	echo
 	echo "Press any key to continue to the next step!"
 	read -sn 1
