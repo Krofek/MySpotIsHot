@@ -3,8 +3,8 @@
 #GLOBAL VARS
 dnsmasq=/etc/dnsmasq.conf
 hostapd=/etc/hostapd.conf
-start=~/myspotishot.sh
-service=/etc/init.d/myspotishot
+start=/usr/sbin/myspotishot.sh
+service=/etc/init/myspotishot.conf
 
 ###################################################################################
 ################################FUNCTIONS!!!#######################################
@@ -17,9 +17,8 @@ echo "Welcome to MySpotIsHot!"
 echo
 if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq; then
 	sudo apt-get update
-	if ! dpkg-query -W hostapd; then sudo apt-get install hostapd
-	elif ! dpkg-query -W dnsmasq; then sudo apt-get install dnsmasq
-	fi
+	if ! dpkg-query -W hostapd; then sudo apt-get install hostapd; fi
+	if ! dpkg-query -W dnsmasq; then sudo apt-get install dnsmasq; fi	
 else
 	echo
 	echo "The required packages are installed!"
@@ -210,7 +209,7 @@ wpa_pairwise=TKIP CCMP" | sudo tee -a $hostapd
 fi
 }
 
-#CREATE EXECUTABLE SCRIPT -> check if it exists, create new, show the few changeable variables...
+#CREATE EXECUTABLE SCRIPT
 f_crstart() {
 #Chose wlan adapter
 echo
@@ -232,7 +231,7 @@ if [[ $eth = "" ]]; then
 	unset eth
 fi
 
-touch $start
+sudo touch $start
 echo "#!/bin/bash
 rfkill unblock wifi
 sudo ifconfig ${wlan:-wlan0} 192.168.150.1
@@ -243,8 +242,8 @@ sudo hostapd /etc/hostapd.conf
 sudo iptables -D POSTROUTING -t nat -o ${eth:-eth0} -j MASQUERADE
 sudo sysctl net.ipv4.ip_forward=0
 sudo service dnsmasq stop
-sudo service hostapd stop" > $start
-chmod u+x $start
+sudo service hostapd stop" | sudo tee -a $start &>/dev/null
+sudo chmod u+x $start
 }
 
 #CHECK IF START SCRIPT EXISTS
@@ -286,43 +285,34 @@ fi
 f_initd() {
 sudo rm -rf $service
 sudo touch $service
-echo '#!/bin/bash
-#
-# MySpotIsHot Service Init
-start() {
-        echo "Starting MySpotIsHot service: "
-        sudo sh '$start' &
-        sudo touch /var/lock/myspotishot.lock
-        echo
+echo 'description "MySpotIsHot service!"
+author "Matej Vrabec"
+
+pre-start script
+    echo "Starting MySpotIsHot"
+end script
+
+post-stop script
+    echo "Stopping MySpotIsHot"
+end script
+
+exec sudo sh /usr/sbin/myspotishot.sh' | sudo tee -a $service &>/dev/null
 }
-#Service STOP func
-stop() {
-        echo "Stopping MySpotIsHot service: "
-        sudo killproc myspotishot
-        sudo rm -rf /var/lock/myspotishot.lock
-        echo
-}
-# JUST IN CASE ;)
-case "$1" in
-  start)
-        start
-        ;;
-  stop)
-        stop
-        ;;
-  status)
-        status myspotishot
-        ;;
-  restart|reload|condrestart)
-        stop
-        start
-        ;;
-  *)
-        echo $"Usage: $0 {start|stop|restart|reload|status}"
-        exit 1
-esac
-exit 0' | sudo tee -a $service &>/dev/null
-sudo chmod u+x $service
+
+#SERVICE RUN
+
+f_serstart() {
+clear
+echo "6.) If you want to start the service right away press S or Enter to finish!"
+read -n 1 sstart
+echo
+if [[ $sstart = "" ]]; then
+	break
+elif [[ $sstart = "s" || $sstart = "S" ]]; then
+	sudo start myspotishot 
+	echo "Your hotspot is up and running...probably xD"
+	break
+fi
 }
 
 #SERVICE SETUP
@@ -339,13 +329,15 @@ if [ ! -f $service ]; then
 		f_initd
 		echo "MySpotIsHot service created!"
 		echo
-		echo "Usage: service myspotishot {start|stop|restart|reload|status}"
+		echo "Usage: sudo {start|stop|status} myspotishot"
+		echo
+		f_serstart
 		break
 	elif [[ $servicecr = "" || $servicecr = "" ]]; then
 		break
 	fi
 else
-	echo "MySpotIsHot service already installed. Usage: service myspotishot {start|stop|restart|reload|status}"
+	echo "MySpotIsHot service already installed. Usage: sudo {start|stop|status} myspotishot"
 	echo
 	echo "Press D to delete it or Enter to continue"
 	read -n 1 servicedel
@@ -354,24 +346,13 @@ else
 		sudo rm -rf $service
 		echo "MySpotIsHot service deleted!"
 	elif [[ $servicedel = "" || $servicedel = "" ]]; then
+		f_serstart
 		break
 	fi
 fi
 }
 
-f_serstart() {
-clear
-echo "6.) If you want to start the service right away press S or Enter to finish!"
-read -n 1 sstart
-echo
-if [[ $sstart = "" ]]; then
-	break
-elif [[ $sstart = "s" || $sstart = "S" ]]; then
-	sudo $start & 
-	echo "Your hotspot is up and running...probably xD"
-	break
-fi
-}
+
 
 ###################################################################################
 ########################START SCRIPT!!!############################################
@@ -411,12 +392,6 @@ done
 while :
 do
 	f_service
-done
-
-#EXEC CREATE SERVICE
-while :
-do
-	f_serstart
 done
 
 #FINISH SETUP
