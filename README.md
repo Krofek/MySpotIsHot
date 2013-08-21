@@ -11,13 +11,29 @@ If for some chance it is not executable::
 
 	$ chmod u+x Myspotishot.sh
 
-The script will guide you through the setup
+The script will guide you through the setup.
 
-Enjoy!
+After finishing with the setup you should have an Upstart job available.
+You can start the hotspot the following way:
+	
+	$ sudo start myspotishot
+
+or
+
+	$ sudo sh /usr/sbin/myspotishot.sh
+
+Stop the hotspot:
+
+	$ sudo stop myspotishot
+
+Check the status:
+
+	$ sudo status myspotishot
 
 TO-DO:
 ______
 
+* adding the option to make the service run at system startup
 * check for available wlan adapters and choose one
 * check for ethernet adapter connecting to the internet
 * tbd
