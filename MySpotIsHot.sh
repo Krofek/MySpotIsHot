@@ -237,6 +237,7 @@ if [[ $eth = "" ]]; then
 	unset eth
 fi
 
+sudo rm -rf $start
 sudo touch $start
 echo "#!/bin/bash
 rfkill unblock wifi
@@ -304,6 +305,12 @@ end script
 
 exec sudo sh /usr/sbin/myspotishot.sh' | sudo tee -a $service &>/dev/null
 }
+
+#RUN AT SYSTEM START
+#
+# add: start on filesystem
+# remove: line: start on filesystem
+# option: respawn if down
 
 #SERVICE RUN
 
