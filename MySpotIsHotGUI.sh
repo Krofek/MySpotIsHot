@@ -1,18 +1,41 @@
 #!/bin/bash
 
-if [ ! -s temporary ]; then echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\n' > temporary; fi
-. temporary
+if [ ! -s .myspotrc ]; then echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\n' > .myspotrc; fi
+. .myspotrc
+
+touch status
 
 URL="https://github.com/Krofek"
 
+#! /bin/sh
+#
+# Gtkdialog to execute program as root from a WM menu.
+# - SliTaz GNU/Linux 2008.
+#
+VERSION=v0.2alpha
+
+# Usage.
+#if [ -z "$1" ]; then
+#    echo "Slitaz subox version : $VERSION"
+#    echo -e "\nUsage : subox program\n"
+#    exit 0
+#fi
+
+# Nothing to do if we are root
+
+# Keep command in an exported variable to be used by SU_DIALOG.
+export SU_CMD=$@
+
+
 export main='
 <window allow-grow="false" title="MySpotIsHot">
+
 <vbox>
 
 	<frame>
 	<vbox homogeneous="true">
   	<text use-markup="true">
-  		<label>"<span weight='"'bold'"' size='"'large'"'>MySpotIsHot v0.1alpha</span>"</label>
+  		<label>"<span weight='"'bold'"' size='"'large'"'>MySpotIsHot '$VERSION'</span>"</label>
   	</text>
   	<text use-markup="true">
   		<label>"<span><a href='"'...'"'>Krofek@GitHub</a></span>"</label>
@@ -27,7 +50,7 @@ export main='
 		<entry editable="true" allow-empty="false">
 			<variable>SSID</variable>
 			<default>'"$SSID"'</default>
-			<input>echo '$SSID'</input>
+			<input>echo '"$SSID"'</input>
 		</entry>
 	</hbox>
 
@@ -110,8 +133,8 @@ export main='
 		<button>
 		  <label>Start!</label>
 		  <input file stock="gtk-yes"></input>
-		  <action>sudo start myspotishot > status &</action>
-		  <action function="refresh">STATUS</action>
+		  <action>sudo start myspotishot</action>
+		  <action type="refresh">STATUS</action>
 		</button>
 		<button>
 		  <label>Status</label>
@@ -120,8 +143,8 @@ export main='
 		<button>
 		  <label>Stop!</label>
 		  <input file stock="gtk-stop"></input>
-		  <action>sudo stop myspotishot > status &</action>
-		  <action function="refresh">STATUS</action>
+		  <action>sudo stop myspotishot</action>
+		  <action type="refresh">STATUS</action>
 		</button>
 	</hbox>
 	</frame>
@@ -130,8 +153,9 @@ export main='
   	<button width-request="70">
   		<input file stock="gtk-undo"></input>
   		<label>Restore Defaults</label>
-  		<action>echo "SSID=\"ssid\"\nPASS=\"password\"\nETH=\"eth0\"\nWLAN=\"wlan0\"\nDHCP=\"192.168.150.2,192.168.150.10\"\nHWMODE1=\"false\"\nHWMODE2=\"true\"\nHWMODE3=\"false\"\n" > temporary</action>
+  		<action>echo "SSID=\"ssid\"\nPASS=\"password\"\nETH=\"eth0\"\nWLAN=\"wlan0\"\nDHCP=\"192.168.150.2,192.168.150.10\"\nHWMODE1=\"false\"\nHWMODE2=\"true\"\nHWMODE3=\"false\"\n" > .myspotrc</action>
   		<variable>RESTORE</variable>
+  		<action>SSID=ssid</action>
       <action>refresh:SSID</action>
       <action>refresh:PASS</action>
       <action>refresh:ETH</action>
@@ -143,24 +167,62 @@ export main='
  		<button ok><input file stock="gtk-ok"></input></button>
 	</hbox>
 	
+	<timer milliseconds="true" interval="5000" visible="false">
+		<action type="refresh">STATUS</action>
+	</timer>
+	
 	<statusbar has-resize-grip="false" auto-refresh="true">
 		<variable>STATUS</variable>
-		<input file>status</input>
+		<input>sudo status myspotishot</input>
 	</statusbar> 
-
+	
+	<variable>main</variable>
+	
 </vbox>
 </window>'
 
+export SU_DIALOG='
+<window>
+  <vbox>
+    <text wrap="true" width-chars="48">
+      <label>"
+Please enter root password to continue :"
+      </label>
+    </text>
+    <text>
+      <input>echo $SU_CMD</input>
+    </text>
 
-#			## <default>'"$SSID"'</default>
+    <hbox>
+      <text use-markup="true">
+        <label>"<b>Root password :</b>"</label>
+      </text>
+      <entry visibility="false">
+        <default>root</default>
+        <variable>PASSWD</variable>
+      </entry>
+    </hbox>
+
+    <hbox>
+      <button ok>
+        <action>echo $PASSWD | sudo -S "$SU_CMD" &</action>
+        <action type="launch">main</action>
+      </button>
+      <button cancel></button>
+    </hbox>
+		<variable>SU_DIALOG</variable>
+  </vbox>
+</window>
+'
+
 I=$IFS; IFS=""
-for STATEMENTS in  $(gtkdialog --center --program main); do
+for STATEMENTS in  $(gtkdialog --center --program SU_DIALOG); do
   eval $STATEMENTS
 done
 IFS=$I
 
 if [ ! "$EXIT" = "OK" ]; then
-  echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\n" > temporary
+  exit 0
 else
-  echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\n" > temporary
+  echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\n" > .myspotrc
 fi
