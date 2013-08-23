@@ -37,3 +37,10 @@ ______
 * check for available wlan adapters and choose one
 * check for ethernet adapter connecting to the internet
 * tbd
+
+MySpotIsHotGUI prealpha...
+==========================
+
+work in progress...pic or it didn't happen? :D
+
+.. img:: MySpotIsHotGUI.png
