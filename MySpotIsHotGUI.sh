@@ -7,8 +7,6 @@ URL="https://github.com/Krofek"
 
 VERSION=v0.2alpha
 
-export SU_CMD=$@
-
 export main='
 <window allow-grow="false" title="MySpotIsHot">
 
@@ -151,8 +149,7 @@ export main='
 	
 	<timer milliseconds="true" interval="5000" visible="false">
 		<action type="refresh">STATUS</action>
-	</timer>
-	
+	</timer>	
 	<statusbar has-resize-grip="false" auto-refresh="true">
 		<variable>STATUS</variable>
 		<input>sudo status myspotishot</input>
@@ -163,42 +160,8 @@ export main='
 </vbox>
 </window>'
 
-export SU_DIALOG='
-<window>
-  <vbox>
-    <text wrap="true" width-chars="48">
-      <label>"
-Please enter root password to continue :"
-      </label>
-    </text>
-    <text>
-      <input>echo $SU_CMD</input>
-    </text>
-
-    <hbox>
-      <text use-markup="true">
-        <label>"<b>Root password :</b>"</label>
-      </text>
-      <entry visibility="false">
-        <default>root</default>
-        <variable>PASSWD</variable>
-      </entry>
-    </hbox>
-
-    <hbox>
-      <button ok>
-        <action>echo $PASSWD | sudo -S "$SU_CMD" &</action>
-        <action type="launch">main</action>
-      </button>
-      <button cancel></button>
-    </hbox>
-		<variable>SU_DIALOG</variable>
-  </vbox>
-</window>
-'
-
 I=$IFS; IFS=""
-for STATEMENTS in  $(gtkdialog --center --program SU_DIALOG); do
+for STATEMENTS in  $(gtkdialog --center --program main); do
   eval $STATEMENTS
 done
 IFS=$I
