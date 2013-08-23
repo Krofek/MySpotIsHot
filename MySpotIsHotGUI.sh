@@ -3,29 +3,11 @@
 if [ ! -s .myspotrc ]; then echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\n' > .myspotrc; fi
 . .myspotrc
 
-touch status
-
 URL="https://github.com/Krofek"
 
-#! /bin/sh
-#
-# Gtkdialog to execute program as root from a WM menu.
-# - SliTaz GNU/Linux 2008.
-#
 VERSION=v0.2alpha
 
-# Usage.
-#if [ -z "$1" ]; then
-#    echo "Slitaz subox version : $VERSION"
-#    echo -e "\nUsage : subox program\n"
-#    exit 0
-#fi
-
-# Nothing to do if we are root
-
-# Keep command in an exported variable to be used by SU_DIALOG.
 export SU_CMD=$@
-
 
 export main='
 <window allow-grow="false" title="MySpotIsHot">
