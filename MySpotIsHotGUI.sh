@@ -11,13 +11,12 @@ URL="https://github.com/Krofek"
 
 VERSION=v0.2alpha
 
-EXECBASH="exec $SHELL -c"
+EXECFUNC="exec $SHELL -c"
 
 service=/etc/init/myspotishot.conf
-export service EXECBASH
+export service EXECFUNC
 
 f_startup() {
-
 if [[ $STARTUP1 = "true" ]]; then
     echo "
 start on local-filesystems
@@ -30,7 +29,6 @@ respawn" | sudo tee -a $service &>/dev/null
 else
     echo ""
 fi
-
 }
 export -f f_startup
 
@@ -223,7 +221,7 @@ export main='
   	    <button>
             <label>Apply</label>
             <input file stock="gtk-apply"></input>
-            <action>'$EXECBASH' f_init</action>
+            <action>'$EXECFUNC' f_init</action>
         </button>
  		<button ok><input file stock="gtk-ok"></input></button>
         <button cancel></button>
