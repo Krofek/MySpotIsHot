@@ -79,7 +79,7 @@ export main='
 		<text><label>SSID name</label></text>
 		<entry editable="true" allow-empty="false">
 			<variable>SSID</variable>
-			<default>'"$SSID"'</default>
+			<default>'$SSID'</default>
 			<input>echo '$SSID'</input>
 		</entry>
 	</hbox>
@@ -88,7 +88,7 @@ export main='
 		<text><label>Password</label></text>
 		<entry visibility="false" caps-lock-warning="true" editable="true" allow-empty="false">
 			<variable>PASS</variable>
-			<default>'"$PASS"'</default>
+			<default>'$PASS'</default>
 			<input>echo '$PASS'</input>
 		</entry>
 	</hbox>
@@ -97,7 +97,7 @@ export main='
 		<text><label>Choose ethernet adapter</label></text>
 		<entry>
 			<variable>ETH</variable>
-			<default>'"$ETH"'</default>
+			<default>'$ETH'</default>
 			<input>echo '$ETH'</input>
 		</entry>
 		<button>
@@ -110,7 +110,7 @@ export main='
 		<text><label>Choose wlan adapter</label></text>
 		<entry>
 			<variable>WLAN</variable>
-			<default>'"$WLAN"'</default>
+			<default>'$WLAN'</default>
 			<input>echo '$WLAN'</input>
 		</entry>
 		<button>
@@ -123,7 +123,7 @@ export main='
 		<text><label>DHCP range</label></text>
 		<entry>
 			<variable>DHCP</variable>
-			<default>'"$DHCP"'</default>
+			<default>'$DHCP'</default>
 			<input>echo '$DHCP'</input>
 		</entry>
 	</hbox>
@@ -132,15 +132,15 @@ export main='
         <text><label>Choose 802.11x mode</label></text>
 		<radiobutton label="b">
 			<variable>HWMODE1</variable>
-		 	<default>'"$HWMODE1"'</default>
+		 	<default>'$HWMODE1'</default>
 		</radiobutton>
 		<radiobutton label="g">
 			<variable>HWMODE2</variable>
-		 	<default>'"$HWMODE2"'</default>
+		 	<default>'$HWMODE2'</default>
 		</radiobutton>
 		<radiobutton label="n">
 			<variable>HWMODE3</variable>
-		 	<default>'"$HWMODE3"'</default>
+		 	<default>'$HWMODE3'</default>
 		</radiobutton>
 	</hbox>
 
@@ -196,7 +196,7 @@ export main='
 		</button>
 		<button>
 		  <label>Status</label>
-		  <action>sudo cat /var/log/upstart/myspotishot.log | zenity --text-info  --width=500 --height=500 --title "myspotishot.log" &</action>
+		  <action>sudo tail -f /var/log/upstart/myspotishot.log | zenity --text-info  --width=500 --height=500 --title "myspotishot.log" &</action>
 		</button>
 		<button>
 		  <label>Stop!</label>
