@@ -43,4 +43,4 @@ MySpotIsHotGUI prealpha...
 
 work in progress...pic or it didn't happen? :D
 
-![alt tag](https://raw.github.com/Krofek/MySpotIsHot/master/MySpotIsHotGUI.png)
+![alt tag](https://raw.github.com/Krofek/MySpotIsHot/master/myspotishotgui.png)
