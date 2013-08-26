@@ -38,9 +38,23 @@ ______
 * check for ethernet adapter connecting to the internet
 * tbd
 
-MySpotIsHotGUI prealpha...
+MySpotIsHotGUI beta...
 ==========================
+Ubuntu 13.04
 
-work in progress...pic or it didn't happen? :D
+Runs with gtkdialog::
+
+	sudo apt-get install subversion autoconf libgtk2.0-dev bison
+
+Need to install gtkdialog manually:
+
+	svn checkout http://gtkdialog.googlecode.com/svn/trunk/ gtkdialog
+	cd gtkdialog
+	./autogen.sh
+	make
+	sudo make install
+	
+Hostapd and dnsmasq can be installed through the GUI
+
 
 ![alt tag](https://raw.github.com/Krofek/MySpotIsHot/master/myspotishotgui.png)
