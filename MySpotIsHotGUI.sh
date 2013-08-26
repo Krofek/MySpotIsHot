@@ -1,11 +1,61 @@
 #!/bin/bash
 
-if [ ! -s .myspotrc ]; then echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\n' > .myspotrc; fi
+f_config() {
+echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nSTARTUP="$STARTUP"\nSTARTUP0="$STARTUP0"\nSTARTUP1="$STARTUP1"\nSTARTUP2="$STARTUP2"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\n" > .myspotrc
+}
+
+if [ ! -s .myspotrc ]; then echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\n' > .myspotrc; fi
 . .myspotrc
 
 URL="https://github.com/Krofek"
 
 VERSION=v0.2alpha
+
+EXECBASH="exec $SHELL -c"
+
+service=/etc/init/myspotishot.conf
+export service EXECBASH
+
+f_startup() {
+
+if [[ $STARTUP1 = "true" ]]; then
+    echo "
+start on local-filesystems
+respawn" | sudo tee -a $service &>/dev/null
+
+elif [[ $STARTUP2 = "true" ]]; then
+    echo "
+start on net-device-up IFACE=$ETH
+respawn" | sudo tee -a $service &>/dev/null
+else
+    echo ""
+fi
+
+}
+export -f f_startup
+
+f_init() {
+sudo rm -rf $service
+sudo touch $service
+echo 'description "MySpotIsHot service!"
+author "Matej Vrabec"' | sudo tee -a $service &>/dev/null
+
+f_startup
+
+echo '
+stop on runlevel [!12345]
+
+pre-start script
+    echo "Starting MySpotIsHot"
+end script
+
+post-stop script
+    echo "Stopping MySpotIsHot"
+end script
+
+exec sudo sh /usr/sbin/myspotishot.sh' | sudo tee -a $service &>/dev/null
+}
+export -f f_init
 
 export main='
 <window allow-grow="false" title="MySpotIsHot">
@@ -30,7 +80,7 @@ export main='
 		<entry editable="true" allow-empty="false">
 			<variable>SSID</variable>
 			<default>'"$SSID"'</default>
-			<input>echo '"$SSID"'</input>
+			<input>echo '$SSID'</input>
 		</entry>
 	</hbox>
 
@@ -79,7 +129,7 @@ export main='
 	</hbox>
 
 	<hbox>
-		<text><label>Choose 802.11x mode</label></text>
+        <text><label>Choose 802.11x mode</label></text>
 		<radiobutton label="b">
 			<variable>HWMODE1</variable>
 		 	<default>'"$HWMODE1"'</default>
@@ -93,6 +143,34 @@ export main='
 		 	<default>'"$HWMODE3"'</default>
 		</radiobutton>
 	</hbox>
+
+    <hbox>
+        <text><label>Startup options</label></text>
+        <checkbox>
+            <label>""</label>
+            <variable>STARTUP</variable>
+            <default>'$STARTUP'</default>
+            <action>if true enable:STARTUP0</action>
+            <action>if true enable:STARTUP1</action>
+            <action>if true enable:STARTUP2</action>
+            <action>if false disable:STARTUP0</action>
+            <action>if false disable:STARTUP1</action>
+            <action>if false disable:STARTUP2</action>
+        </checkbox>
+        <radiobutton label="None">
+			<variable>STARTUP0</variable>
+            <visible>disabled</visible>
+		</radiobutton>
+        <radiobutton label="Filesystem">
+			<variable>STARTUP1</variable>
+            <visible>disabled</visible>
+		</radiobutton>
+		<radiobutton label="Internet up">
+			<variable>STARTUP2</variable>
+            <visible>disabled</visible>
+		</radiobutton>
+
+    </hbox>
 	</frame>
 
 	<frame Show configs>
@@ -130,21 +208,25 @@ export main='
 	</frame>
 
   <hbox space-expand="false" space-fill="false">
-  	<button width-request="70">
+  	<button width-request="85">
   		<input file stock="gtk-undo"></input>
   		<label>Restore Defaults</label>
   		<action>echo "SSID=\"ssid\"\nPASS=\"password\"\nETH=\"eth0\"\nWLAN=\"wlan0\"\nDHCP=\"192.168.150.2,192.168.150.10\"\nHWMODE1=\"false\"\nHWMODE2=\"true\"\nHWMODE3=\"false\"\n" > .myspotrc</action>
   		<variable>RESTORE</variable>
-  		<action>SSID=ssid</action>
-      <action>refresh:SSID</action>
+      <action type="refresh">SSID</action>
       <action>refresh:PASS</action>
       <action>refresh:ETH</action>
       <action>refresh:WLAN</action>
       <action>refresh:DHCP</action>
   	</button>
-  	<hbox space-expand="true" space-fill="true"><text><label>""</label></text></hbox> 
-  	<button><label>Apply</label><input file stock="gtk-apply"></input></button>
+  	<hbox space-expand="true" space-fill="true"><text><label>""</label></text></hbox>
+  	    <button>
+            <label>Apply</label>
+            <input file stock="gtk-apply"></input>
+            <action>'$EXECBASH' f_init</action>
+        </button>
  		<button ok><input file stock="gtk-ok"></input></button>
+        <button cancel></button>
 	</hbox>
 	
 	<timer milliseconds="true" interval="5000" visible="false">
@@ -153,7 +235,7 @@ export main='
 	<statusbar has-resize-grip="false" auto-refresh="true">
 		<variable>STATUS</variable>
 		<input>sudo status myspotishot</input>
-	</statusbar> 
+	</statusbar>
 	
 	<variable>main</variable>
 	
@@ -169,5 +251,5 @@ IFS=$I
 if [ ! "$EXIT" = "OK" ]; then
   exit 0
 else
-  echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\n" > .myspotrc
+    f_config
 fi
