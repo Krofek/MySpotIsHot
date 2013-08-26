@@ -1,10 +1,10 @@
 #!/bin/bash
 
 f_config() {
-echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nSTARTUP="$STARTUP"\nSTARTUP0="$STARTUP0"\nSTARTUP1="$STARTUP1"\nSTARTUP2="$STARTUP2"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\n" > .myspotrc
+echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0="$STARTUP0"\nSTARTUP1="$STARTUP1"\nSTARTUP2="$STARTUP2"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\n" > .myspotrc
 }
 
-if [ ! -s .myspotrc ]; then echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\n' > .myspotrc; fi
+if [ ! -s .myspotrc ]; then echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\n' > .myspotrc; fi
 . .myspotrc
 
 URL="https://github.com/Krofek"
@@ -15,6 +15,14 @@ EXECFUNC="exec $SHELL -c"
 
 service=/etc/init/myspotishot.conf
 export service EXECFUNC
+
+f_visib() {
+sed -i 's/^VISIB="disabled"$/VISIB="enabled"/' .myspotrc
+}
+f_invisib() {
+sed -i 's/^VISIB="enabled"$/VISIB="disabled"/' .myspotrc
+}
+export -f f_visib f_invisib
 
 f_startup() {
 if [[ $STARTUP1 = "true" ]]; then
@@ -148,24 +156,26 @@ export main='
             <label>""</label>
             <variable>STARTUP</variable>
             <default>'$STARTUP'</default>
-            <action>if true enable:STARTUP0</action>
             <action>if true enable:STARTUP1</action>
             <action>if true enable:STARTUP2</action>
-            <action>if false disable:STARTUP0</action>
             <action>if false disable:STARTUP1</action>
             <action>if false disable:STARTUP2</action>
-        </checkbox>
-        <radiobutton label="None">
-			<variable>STARTUP0</variable>
-            <visible>disabled</visible>
+            <action>if false STARTUP0="true"</action>
+            <action>if false refresh:STARTUP0</action>
+            <action>if false refresh:STARTUP1</action>
+            <action>if false refresh:STARTUP2</action>
+       </checkbox>
+        <radiobutton label="None" visible="false">
+            <variable>STARTUP0</variable>
+            <input>echo '$STARTUP0'</input>
 		</radiobutton>
         <radiobutton label="Filesystem">
 			<variable>STARTUP1</variable>
-            <visible>disabled</visible>
+            <visible>'$VISIB'</visible>
 		</radiobutton>
 		<radiobutton label="Internet up">
 			<variable>STARTUP2</variable>
-            <visible>disabled</visible>
+            <visible>'$VISIB'</visible>
 		</radiobutton>
 
     </hbox>
@@ -240,6 +250,7 @@ export main='
 </vbox>
 </window>'
 
+
 I=$IFS; IFS=""
 for STATEMENTS in  $(gtkdialog --center --program main); do
   eval $STATEMENTS
@@ -250,4 +261,5 @@ if [ ! "$EXIT" = "OK" ]; then
   exit 0
 else
     f_config
+    if [[ $STARTUP = "true" ]]; then f_visib; else f_invisib; fi
 fi
