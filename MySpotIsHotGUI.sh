@@ -1,5 +1,12 @@
 #!/bin/bash
 
+
+if ! type iw >/dev/null 2>&1; then
+    echo "Installing iw...package needed to check if wlan supports AP mode"
+    sudo apt-get install -y iw >/dev/null 2>&1
+    echo "iw installed"
+fi
+
 f_default() {
     echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\CHANNEL="6"\nWPA="WPA+WPA2"' > .myspotrc
 }
@@ -21,8 +28,17 @@ start=/usr/sbin/myspotishot.sh
 CHANNELS="<item>$CHANNEL</item>"
 for I in 1 2 3 4 5 6 7 8 9 10 11 12; do CHANNELS=`echo "$CHANNELS<item>$I</item>"`; done
 
+ETHI=`ifconfig -a | grep eth |sed "s/[ \t].*//;/^\(lo\|\)$/d"`
+f_ethi="<item>$ETH</item>"
+for eths in $ETHI; do f_ethi=`echo "$f_ethi<item>$eths</item>"`; done
+
+WLANI=`iwconfig 2>&1 | grep wlan | sed "s/[ \t].*//;/^\(lo\|\)$/d"`
+f_wlani="<item>$WLAN</item>"
+for wlans in $WLANI; do f_wlani=`echo "$f_wlani<item>$wlans</item>"`; done
+
 export service dnsmasq hostapd start EXECFUNC
 
+rm -rf temp/
 mkdir temp
 touch temp/ssid temp/pass temp/eth temp/wlan temp/dhcp temp/visib temp/hwmode temp/statusbar temp/startup
 
@@ -124,17 +140,17 @@ f_init() {
     echo -e -n 'description "MySpotIsHot service!"\nauthor "Matej Vrabec"\n' | sudo tee -a $service &>/dev/null
 
     if [[ $STARTUP1 = "true" ]]; then
-    	echo ""
+        echo ""
         echo -e -n "\nstart on local-filesystems\nrespawn\n" | sudo tee -a $service &>/dev/null
 
     elif [[ $STARTUP2 = "true" ]]; then
-    	echo ""
+        echo ""
         echo -e -n "\nstart on net-device-up IFACE=$ETH\nrespawn\n" | sudo tee -a $service &>/dev/null
     else
         echo ""
     fi
 
-	echo ""
+    echo ""
     echo -e -n 'stop on runlevel [!12345]\n\npre-start script\n	echo "Starting MySpotIsHot"\nend script\n\npost-stop script\n	echo "Stopping MySpotIsHot"\nend script\n\nexec sudo sh /usr/sbin/myspotishot.sh' | sudo tee -a $service &>/dev/null
 }
 export -f f_init f_config
@@ -209,27 +225,25 @@ export main='
 
 <hbox>
 <text><label>Choose ethernet adapter</label></text>
-<entry>
-<variable>ETH</variable>
-<input>echo '$ETH'</input>
-<input file>temp/eth</input>
-</entry>
+<combobox>
+<variable>WLAN</variable>
+'$f_ethi'
+</combobox>
 <button>
 <input file stock="gtk-new"></input>
-<action>ifconfig | grep eth | zenity --text-info  --width=700 --height=500 --title "Ethernet adapters" &</action>
+<action>ifconfig | grep eth: -A 5 | zenity --text-info  --width=700 --height=500 --title "Ethernet adapters" &</action>
 </button>
 </hbox>
 
 <hbox>
 <text><label>Choose wlan adapter</label></text>
-<entry>
+<combobox>
 <variable>WLAN</variable>
-<default>'$WLAN'</default>
-<input>echo '$WLAN'</input>
-</entry>
+'$f_wlani'
+</combobox>
 <button>
 <input file stock="gtk-new"></input>
-<action>iwconfig 2>&1 | grep wlan | zenity --text-info  --width=700 --height=500 --title "Wlan adapters" &</action>
+<action>iw list | grep modes: -A 10 | zenity --text-info  --width=700 --height=500 --title "Wlan adapters" &</action>
 </button>
 </hbox>
 
