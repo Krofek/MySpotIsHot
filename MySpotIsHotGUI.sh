@@ -231,7 +231,7 @@ export main='
 </combobox>
 <button>
 <input file stock="gtk-new"></input>
-<action>ifconfig | grep eth: -A 5 | zenity --text-info  --width=700 --height=500 --title "Ethernet adapters" &</action>
+<action>ifconfig | grep eth | zenity --text-info  --width=700 --height=500 --title "Ethernet adapters" &</action>
 </button>
 </hbox>
 
