@@ -62,6 +62,7 @@ Hostapd and dnsmasq can be installed through the GUI
 TO-DO:
 ______
 
+* nicer and better button positions
 * grey out wlan adapter combobox if wlan adapter doesnt support AP mode (also popup window shows with text saying it)
 * check if packages are installed, if they are not, popup window saying Please install...
 * popup windows instead of using zenity for showing configs and other stuff...
