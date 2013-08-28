@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 if ! type iw >/dev/null 2>&1; then
     echo "Installing iw...package needed to check if wlan supports AP mode"
     sudo apt-get install -y iw >/dev/null 2>&1
@@ -230,7 +229,7 @@ export main='
 '$f_ethi'
 </combobox>
 <button>
-<input file stock="gtk-new"></input>
+<input file stock="gtk-index"></input>
 <action>ifconfig | grep eth | zenity --text-info  --width=700 --height=500 --title "Ethernet adapters" &</action>
 </button>
 </hbox>
@@ -242,7 +241,7 @@ export main='
 '$f_wlani'
 </combobox>
 <button>
-<input file stock="gtk-new"></input>
+<input file stock="gtk-index"></input>
 <action>iw list | grep modes: -A 10 | zenity --text-info  --width=700 --height=500 --title "Wlan adapters" &</action>
 </button>
 </hbox>

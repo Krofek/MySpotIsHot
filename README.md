@@ -58,3 +58,11 @@ Hostapd and dnsmasq can be installed through the GUI
 
 
 ![alt tag](https://raw.github.com/Krofek/MySpotIsHot/master/myspotishotgui.png)
+
+TO-DO:
+______
+
+* grey out wlan adapter combobox if wlan adapter doesnt support AP mode (also popup window shows with text saying it)
+* check if packages are installed, if they are not, popup window saying Please install...
+* popup windows instead of using zenity for showing configs and other stuff...
+* if you have any suggestions about anything
