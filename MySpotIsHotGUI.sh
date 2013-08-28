@@ -115,7 +115,7 @@ export -f f_visib f_invisib f_hwmode f_hostapd f_showdns f_dnsmasq f_wpa
 
 #write config
 f_config() {
-    echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0="$STARTUP0"\nSTARTUP1="$STARTUP1"\nSTARTUP2="$STARTUP2"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"" > .myspotrc
+    echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0=\"$STARTUP0\"\nSTARTUP1=\"$STARTUP1\"\nSTARTUP2=\"$STARTUP2\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"" > .myspotrc
 }
 
 #write upstart script
@@ -262,15 +262,18 @@ export main='
 <radiobutton label="b">
 <variable>HWMODE1</variable>
 <default>'$HWMODE1'</default>
+<input>echo '$HWMODE1'</input>
 </radiobutton>
 <radiobutton label="g">
 <variable>HWMODE2</variable>
 <default>'$HWMODE2'</default>
+<input>echo '$HWMODE2'</input>
 <input file>temp/hwmode</input>
 </radiobutton>
 <radiobutton label="n">
 <variable>HWMODE3</variable>
 <default>'$HWMODE3'</default>
+<input>echo '$HWMODE3'</input>
 </radiobutton>
 </hbox>
 
@@ -296,10 +299,12 @@ export main='
 </radiobutton>
 <radiobutton label="Filesystem">
 <variable>STARTUP1</variable>
+<default>'$STARTUP1'</default>
 <visible>'$VISIB'</visible>
 </radiobutton>
 <radiobutton label="Internet up">
 <variable>STARTUP2</variable>
+<default>'$STARTUP2'</default>
 <visible>'$VISIB'</visible>
 </radiobutton>
 
@@ -311,6 +316,10 @@ export main='
 <button>
 <label>hostapd.conf</label>
 <action>cat /etc/hostapd.conf | zenity --text-info  --width=300 --height=500 --title "/etc/hostapd.conf" &</action>
+</button>
+<button>
+<label>Upstart</label>
+<action>cat /etc/init/myspotishot.conf | zenity --text-info  --width=400 --height=500 --title "/etc/init/myspotishot.conf" &</action>
 </button>
 <button>
 <label>dnsmasq.conf</label>
