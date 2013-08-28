@@ -10,13 +10,6 @@ export -f f_default
 [ ! -s .myspotrc ] && f_default
 . .myspotrc
 
-mkdir temp
-touch temp/ssid temp/pass temp/eth temp/wlan temp/dhcp temp/visib temp/hwmode temp/statusbar temp/startup
-
-[ ! -f "${dnsmasq}.bak" ] && sudo cp "$dnsmasq" "${dnsmasq}.bak"
-
-#######################VARS#########################
-
 URL="https://github.com/Krofek"
 VERSION=v0.5beta
 EXECFUNC="exec $SHELL -c"
@@ -29,6 +22,11 @@ CHANNELS="<item>$CHANNEL</item>"
 for I in 1 2 3 4 5 6 7 8 9 10 11 12; do CHANNELS=`echo "$CHANNELS<item>$I</item>"`; done
 
 export service dnsmasq hostapd start EXECFUNC
+
+mkdir temp
+touch temp/ssid temp/pass temp/eth temp/wlan temp/dhcp temp/visib temp/hwmode temp/statusbar temp/startup
+
+[ ! -f "${dnsmasq}.bak" ] && sudo cp "$dnsmasq" "${dnsmasq}.bak"
 
 ##########################FONTS#####################
 
