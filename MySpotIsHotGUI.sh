@@ -140,9 +140,9 @@ f_init() {
 export -f f_init f_config
 
 f_prereq() {
-    sudo apt-get update && echo "APT updated!" && sleep 2
-    if ! dpkg-query -W hostapd; then sudo apt-get install -y hostapd && echo hostapd installed; fi
-    if ! dpkg-query -W dnsmasq; then sudo apt-get install -y dnsmasq && echo dnsmasq installed; fi
+    sudo apt-get update && echo "APT updated!" && sleep 1
+    type hostapd >/dev/null 2>&1 && echo "hostapd already installed" && sleep 1 || sudo apt-get install -y hostapd && echo "hostapd installed" && sleep 1
+    type dnsmasq >/dev/null 2>&1 && echo "dnsmasq already installed" && sleep 1 || sudo apt-get install -y dnsmasq && echo "dnsmasq installed" && sleep 1
     echo "Done! Please close the window!" 
 }
 export -f f_prereq
@@ -426,12 +426,6 @@ export main='
 ########################################################
 ###########################ENDING#######################
 ########################################################
-
-#if ! dpkg-query -W hostapd || ! dpkg-query -W dnsmasq; then
-#	gtkdialog --center --program prereq
-#else
-#	gtkdialog --center --program main
-#fi
 
 I=$IFS; IFS=""
 for STATEMENTS in  $(gtkdialog --center --program main); do
