@@ -7,7 +7,11 @@ if ! type iw >/dev/null 2>&1; then
 fi
 
 f_default() {
-    echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\CHANNEL="6"\nWPA="WPA+WPA2"' > .myspotrc
+    echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nSTARTUP0="true"\nSTARTUP1="false"\nSTARTUP2="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\nCHANNEL="6"\nWPA="WPA+WPA2"
+service=/etc/init/myspotishot.conf
+dnsmasq=/etc/dnsmasq.conf
+hostapd=/etc/hostapd.conf
+startsc=/usr/sbin/myspotishot.sh' > .myspotrc
 }
 export -f f_default
 
@@ -19,10 +23,6 @@ export -f f_default
 URL="https://github.com/Krofek"
 VERSION=v0.5beta
 EXECFUNC="exec $SHELL -c"
-service=/etc/init/myspotishot.conf
-dnsmasq=/etc/dnsmasq.conf
-hostapd=/etc/hostapd.conf
-start=/usr/sbin/myspotishot.sh
 
 CHANNELS="<item>$CHANNEL</item>"
 for I in 1 2 3 4 5 6 7 8 9 10 11 12; do CHANNELS=`echo "$CHANNELS<item>$I</item>"`; done
@@ -39,7 +39,7 @@ export service dnsmasq hostapd start EXECFUNC
 
 rm -rf temp/
 mkdir temp
-touch temp/ssid temp/pass temp/eth temp/wlan temp/dhcp temp/visib temp/hwmode temp/statusbar temp/startup
+touch temp/ssid temp/pass temp/eth temp/wlan temp/dhcp temp/visib temp/hwmode temp/statusbar temp/startup temp/service temp/dnsmasq temp/hostapd temp/startsc
 
 [ ! -f "${dnsmasq}.bak" ] && sudo cp "$dnsmasq" "${dnsmasq}.bak"
 
@@ -58,6 +58,23 @@ export GTK2_RC_FILES=/tmp/gtkrc_mono:/root/.gtkrc-2.0
 
 f_restoredns() {
     sudo cp "${dnsmasq}.bak" "$dnsmasq"
+}
+
+f_startsc() {
+sudo rm -rf $startsc
+sudo touch $startsc
+echo "#!/bin/bash
+rfkill unblock wifi
+sudo ifconfig $WLAN 192.168.150.1
+sudo service dnsmasq restart
+sudo sysctl net.ipv4.ip_forward=1
+sudo iptables -t nat -A POSTROUTING -o $ETH -j MASQUERADE
+sudo hostapd /etc/hostapd.conf
+sudo iptables -D POSTROUTING -t nat -o $ETH -j MASQUERADE
+sudo sysctl net.ipv4.ip_forward=0
+sudo service dnsmasq stop
+sudo service hostapd stop" | sudo tee -a $startsc &>/dev/null
+sudo chmod u+x $startsc
 }
 
 f_showdns() {
@@ -116,7 +133,13 @@ f_restore() {
     echo "disabled" > temp/visib
     echo "true" > temp/hwmode
 }
-export -f f_restore f_restoredns
+f_restoreco() {
+    echo "/etc/init/myspotishot.conf" > temp/service
+    echo "/etc/dnsmasq.conf" > temp/dnsmasq
+    echo "/etc/hostapd.conf" > temp/hostapd
+    echo "/usr/sbin/myspotishot.sh" > temp/startsc
+}
+export -f f_restore f_restoredns f_restoreco
 
 f_visib() {
     sed -i 's/^VISIB="disabled"$/VISIB="enabled"/' .myspotrc
@@ -124,11 +147,15 @@ f_visib() {
 f_invisib() {
     sed -i 's/^VISIB="enabled"$/VISIB="disabled"/' .myspotrc
 }
-export -f f_visib f_invisib f_hwmode f_hostapd f_showdns f_dnsmasq f_wpa
+export -f f_visib f_invisib f_hwmode f_hostapd f_showdns f_dnsmasq f_wpa f_startsc
 
 #write config
 f_config() {
-    echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0=\"$STARTUP0\"\nSTARTUP1=\"$STARTUP1\"\nSTARTUP2=\"$STARTUP2\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"" > .myspotrc
+    echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0=\"$STARTUP0\"\nSTARTUP1=\"$STARTUP1\"\nSTARTUP2=\"$STARTUP2\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"
+service=$service
+dnsmasq=$dnsmasq
+hostapd=$hostapd
+startsc=$startsc" > .myspotrc
 }
 
 #write upstart script
@@ -165,6 +192,58 @@ export -f f_prereq
 #############################
 #########WINDOWS#############
 #############################
+
+export location='
+<window allow-grow="false" title="Edit config locations">
+<vbox>
+<frame Configs>
+<hbox>
+<text width-request="100"><label>myspotishot.sh</label></text>
+<entry width-request="200">
+<variable>startsc</variable>
+<default>'$startsc'</default>
+<input file>temp/startsc</input>
+</entry>
+</hbox>
+<hbox>
+<text width-request="100"><label>dnsmasq.conf</label></text>
+<entry width-request="200">
+<variable>dnsmasq</variable>
+<default>'$dnsmasq'</default>
+<input file>temp/dnsmasq</input>
+</entry>
+</hbox>
+<hbox>
+<text width-request="100"><label>hostapd.conf</label></text>
+<entry width-request="200">
+<variable>hostapd</variable>
+<default>'$hostapd'</default>
+<input file>temp/hostapd</input>
+</entry>
+</hbox>
+<hbox>
+<text width-request="100"><label>Upstart Job</label></text>
+<entry width-request="200">
+<variable>service</variable>
+<default>'$service'</default>
+<input file>temp/service</input>
+</entry>
+</hbox>
+</frame>
+<hbox>
+<button>
+<input file stock="gtk-undo"></input>
+<label>Restore Defaults</label>
+<action>'$EXECFUNC' f_restoreco</action>
+<action>refresh:startsc</action>
+<action>refresh:dnsmasq</action>
+<action>refresh:hostapd</action>
+<action>refresh:service</action>
+</button>
+</hbox>
+</vbox>
+<variable>location</variable>
+</window>'
 
 export prereq='
 <variable>prereq</variable>
@@ -224,7 +303,7 @@ export main='
 
 <hbox>
 <text><label>Choose ethernet adapter</label></text>
-<combobox>
+<combobox width-request="100">
 <variable>WLAN</variable>
 '$f_ethi'
 </combobox>
@@ -236,7 +315,7 @@ export main='
 
 <hbox>
 <text><label>Choose wlan adapter</label></text>
-<combobox>
+<combobox width-request="100">
 <variable>WLAN</variable>
 '$f_wlani'
 </combobox>
@@ -256,11 +335,13 @@ export main='
 </hbox>
 
 <hbox>
-<combobox>
+<text><label>Channel:</label></text>
+<combobox width-request="65">
 <variable>CHANNEL</variable>
 '$CHANNELS'
 </combobox>
-<combobox editable="false">
+<text><label>Encryption:</label></text>
+<combobox width-request="140">
 <variable>WPA</variable>
 <item>WPA+WPA2</item>
 <item>WPA2</item>
@@ -326,15 +407,15 @@ export main='
 <hbox homogeneous="true">
 <button>
 <label>hostapd.conf</label>
-<action>cat /etc/hostapd.conf | zenity --text-info  --width=300 --height=500 --title "/etc/hostapd.conf" &</action>
+<action>cat '$hostapd' | zenity --text-info  --width=300 --height=500 --title "hostapd.conf" &</action>
 </button>
 <button>
 <label>Upstart</label>
-<action>cat /etc/init/myspotishot.conf | zenity --text-info  --width=400 --height=500 --title "/etc/init/myspotishot.conf" &</action>
+<action>cat '$service' | zenity --text-info  --width=400 --height=500 --title "myspotishot.conf" &</action>
 </button>
 <button>
 <label>dnsmasq.conf</label>
-<action>cat /etc/dnsmasq.conf | zenity --text-info  --width=600 --height=500 --title "/etc/dnsmasq.conf" &</action>
+<action>cat '$dnsmasq' | zenity --text-info  --width=600 --height=500 --title "dnsmasq.conf" &</action>
 </button>
 </hbox>
 </frame>
@@ -362,7 +443,7 @@ export main='
 </frame>
 
 <hbox space-expand="false" space-fill="false">
-<button width-request="85">
+<button>
 <input file stock="gtk-undo"></input>
 <label>Restore Defaults</label>
 <variable>RESTORE</variable>
@@ -382,6 +463,7 @@ export main='
 <action>'$EXECFUNC' f_init</action>
 <action>'$EXECFUNC' f_hostapd</action>
 <action>'$EXECFUNC' f_dnsmasq</action>
+<action>'$EXECFUNC' f_startsc</action>
 <action>echo "Settings applied, check configs to be sure!" > temp/statusbar</action>
 <action>refresh:STATUS</action>
 </button>
@@ -417,6 +499,10 @@ export main='
 <button>
 <label>Install packages</label>
 <action type="launch">prereq</action>
+</button>
+<button>
+<label>Config loc</label>
+<action type="launch">location</action>
 </button>
 <button>
 <label>About</label>
@@ -455,3 +541,4 @@ else
     f_config
     if [[ $STARTUP = "true" ]]; then f_visib; else f_invisib; fi
 fi
+
