@@ -59,7 +59,7 @@ f_restoredns() {
 f_startsc() {
     sudo rm -rf $startsc
     sudo touch $startsc
-    echo -e -n "#!/bin/bash\nrfkill unblock wifi\nsudo ifconfig $WLAN 192.168.150.1\nsudo service dnsmasq restart\nsudo sysctl net.ipv4.ip_forward=1\nsudo iptables -t nat -A POSTROUTING -o $ETH -j MASQUERADE\nsudo hostapd "$hostapd"\nsudo iptables -D POSTROUTING -t nat -o $ETH -j MASQUERADE\nsudo sysctl net.ipv4.ip_forward=0\nsudo service dnsmasq stop\nsudo service hostapd stop" | sudo tee -a $startsc &>/dev/null
+    echo -e -n "#!/bin/bash\nrfkill unblock wifi\nsudo ifconfig "$WLAN" 192.168.150.1\nsudo service dnsmasq restart\nsudo sysctl net.ipv4.ip_forward=1\nsudo iptables -t nat -A POSTROUTING -o "$ETH" -j MASQUERADE\nsudo hostapd "$hostapd"\nsudo iptables -D POSTROUTING -t nat -o "$ETH" -j MASQUERADE\nsudo sysctl net.ipv4.ip_forward=0\nsudo service dnsmasq stop\nsudo service hostapd stop" | sudo tee -a $startsc &>/dev/null
     sudo chmod u+x $startsc
 }
 
@@ -235,7 +235,7 @@ export main='
                         <hbox>
                             <text><label>Choose ethernet adapter</label></text>
                             <combobox width-request="100">
-                                <variable>WLAN</variable>
+                                <variable>ETH</variable>
                                 '$f_ethi'
                             </combobox>
                             <button>
