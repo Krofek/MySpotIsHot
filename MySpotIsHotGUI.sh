@@ -7,14 +7,15 @@ if ! type iw >/dev/null 2>&1; then
 fi
 
 f_default() {
-    echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nSTARTUP0="true"\nSTARTUP1="false"\nSTARTUP2="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\nCHANNEL="6"\nWPA="WPA+WPA2"\nservice=/etc/init/myspotishot.conf\ndnsmasq=/etc/dnsmasq.conf\nhostapd=/etc/hostapd.conf\nstartsc=/usr/sbin/myspotishot.sh' > .myspotrc
+    echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nSTARTUP0="true"\nSTARTUP1="false"\nSTARTUP2="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\nCHANNEL="6"\nWPA="WPA+WPA2"\nservice=/etc/init/myspotishot.conf\ndnsmasq=/etc/dnsmasq.conf\nhostapd=/etc/hostapd.conf\nstartsc=/usr/sbin/myspotishot.sh' > ~/.myspot/.myspotrc
 }
 export -f f_default
 
 ###############STARTUP########################
 
-[ ! -s .myspotrc ] && f_default
-. .myspotrc
+mkdir -p ~/.myspot/
+[ ! -s ~/.myspot/.myspotrc ] && f_default
+. $HOME/.myspot/.myspotrc
 
 URL="https://github.com/Krofek"
 VERSION=v0.5beta
@@ -33,9 +34,10 @@ for wlans in $WLANI; do f_wlani=`echo "$f_wlani<item>$wlans</item>"`; done
 
 export service dnsmasq hostapd start EXECFUNC
 
-rm -rf temp/
-mkdir temp
-touch temp/ssid temp/pass temp/eth temp/wlan temp/dhcp temp/visib temp/hwmode temp/statusbar temp/startup temp/service temp/dnsmasq temp/hostapd temp/startsc
+temp=$HOME/.myspot/temp
+rm -rf "$temp"/
+mkdir -p "$temp"/
+touch "$temp"/ssid "$temp"/pass "$temp"/eth "$temp"/wlan "$temp"/dhcp "$temp"/visib "$temp"/hwmode "$temp"/statusbar "$temp"/startup "$temp"/service "$temp"/dnsmasq "$temp"/hostapd "$temp"/startsc
 
 [ ! -f "${dnsmasq}.bak" ] && sudo cp "$dnsmasq" "${dnsmasq}.bak"
 
@@ -110,34 +112,34 @@ f_hostapd() {
 }
 
 f_restore() {
-    echo "ssid" > temp/ssid
-    echo "password" > temp/pass
-    echo "eth0" > temp/eth
-    echo "wlan0" > temp/wlan
-    echo "192.168.150.2,192.168.150.10" > temp/dhcp
-    echo "false" > temp/startup
-    echo "disabled" > temp/visib
-    echo "true" > temp/hwmode
+    echo "ssid" > "$temp"/ssid
+    echo "password" > "$temp"/pass
+    echo "eth0" > "$temp"/eth
+    echo "wlan0" > "$temp"/wlan
+    echo "192.168.150.2,192.168.150.10" > "$temp"/dhcp
+    echo "false" > "$temp"/startup
+    echo "disabled" > "$temp"/visib
+    echo "true" > "$temp"/hwmode
 }
 f_restoreco() {
-    echo "/etc/init/myspotishot.conf" > temp/service
-    echo "/etc/dnsmasq.conf" > temp/dnsmasq
-    echo "/etc/hostapd.conf" > temp/hostapd
-    echo "/usr/sbin/myspotishot.sh" > temp/startsc
+    echo "/etc/init/myspotishot.conf" > "$temp"/service
+    echo "/etc/dnsmasq.conf" > "$temp"/dnsmasq
+    echo "/etc/hostapd.conf" > "$temp"/hostapd
+    echo "/usr/sbin/myspotishot.sh" > "$temp"/startsc
 }
 export -f f_restore f_restoredns f_restoreco
 
 f_visib() {
-    sudo sed -i 's/^VISIB="disabled"$/VISIB="enabled"/' .myspotrc
+    sudo sed -i 's/^VISIB="disabled"$/VISIB="enabled"/' ~/.myspot/.myspotrc
 }
 f_invisib() {
-    sudo sed -i 's/^VISIB="enabled"$/VISIB="disabled"/' .myspotrc
+    sudo sed -i 's/^VISIB="enabled"$/VISIB="disabled"/' ~/.myspot/.myspotrc
 }
 export -f f_visib f_invisib f_hwmode f_hostapd f_showdns f_dnsmasq f_wpa f_startsc
 
 #write config
 f_config() {
-    echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0=\"$STARTUP0\"\nSTARTUP1=\"$STARTUP1\"\nSTARTUP2=\"$STARTUP2\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"\nservice="$service"\ndnsmasq="$dnsmasq"\nhostapd="$hostapd"\nstartsc="$startsc"" > .myspotrc
+    echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0=\"$STARTUP0\"\nSTARTUP1=\"$STARTUP1\"\nSTARTUP2=\"$STARTUP2\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"\nservice="$service"\ndnsmasq="$dnsmasq"\nhostapd="$hostapd"\nstartsc="$startsc"" > ~/.myspot/.myspotrc
 }
 
 #write upstart script
@@ -291,7 +293,7 @@ export main='
                                 <variable>HWMODE2</variable>
                                 <default>'$HWMODE2'</default>
                                 <input>echo '$HWMODE2'</input>
-                                <input file>temp/hwmode</input>
+                                <input file>'$temp'/hwmode</input>
                             </radiobutton>
                             <radiobutton label="n">
                                 <variable>HWMODE3</variable>
@@ -310,7 +312,7 @@ export main='
                                 <action>if true enable:STARTUP2</action>
                                 <action>if false disable:STARTUP1</action>
                                 <action>if false disable:STARTUP2</action>
-                                <action>if false echo "true" > temp/startup</action>
+                                <action>if false echo "true" > '$temp'/startup</action>
                                 <action>refresh:STARTUP0</action>
                                 <action>refresh:STARTUP1</action>
                                 <action>refresh:STARTUP2</action>
@@ -318,7 +320,7 @@ export main='
                             <radiobutton label="None" visible="false">
                                 <variable>STARTUP0</variable>
                                 <input>echo '$STARTUP0'</input>
-                                <input file>temp/startup</input>
+                                <input file>'$temp'/startup</input>
                             </radiobutton>
                             <radiobutton label="Filesystem">
                                 <variable>STARTUP1</variable>
@@ -341,7 +343,7 @@ export main='
                             <entry width-request="200">
                                 <variable>startsc</variable>
                                 <input>echo '$startsc'</input>
-                                <input file>temp/startsc</input>
+                                <input file>'$temp'/startsc</input>
                             </entry>
                         </hbox>
                         <hbox>
@@ -349,7 +351,7 @@ export main='
                             <entry width-request="200">
                                 <variable>dnsmasq</variable>
                                 <default>'$dnsmasq'</default>
-                                <input file>temp/dnsmasq</input>
+                                <input file>'$temp'/dnsmasq</input>
                             </entry>
                         </hbox>
                         <hbox>
@@ -357,7 +359,7 @@ export main='
                             <entry width-request="200">
                                 <variable>hostapd</variable>
                                 <default>'$hostapd'</default>
-                                <input file>temp/hostapd</input>
+                                <input file>'$temp'/hostapd</input>
                             </entry>
                         </hbox>
                         <hbox>
@@ -365,7 +367,7 @@ export main='
                             <entry width-request="200">
                                 <variable>service</variable>
                                 <default>'$service'</default>
-                                <input file>temp/service</input>
+                                <input file>'$temp'/service</input>
                             </entry>
                         </hbox>
                         <hbox space-expand="true" space-fill="true"><text><label>""</label></text></hbox>
@@ -396,18 +398,18 @@ export main='
                         <button>
                             <label>Start!</label>
                             <input file stock="gtk-yes"></input>
-                            <action>sudo start myspotishot > temp/statusbar</action>
+                            <action>sudo start myspotishot > '$temp'/statusbar</action>
                             <action type="refresh">STATUS</action>
                         </button>
                         <button>
                             <label>Status</label>
-                            <action>sudo status myspotishot > temp/statusbar</action>
+                            <action>sudo status myspotishot > '$temp'/statusbar</action>
                             <action type="refresh">STATUS</action>
                         </button>
                         <button>
                             <label>Stop!</label>
                             <input file stock="gtk-stop"></input>
-                            <action>sudo stop myspotishot > temp/statusbar</action>
+                            <action>sudo stop myspotishot > '$temp'/statusbar</action>
                             <action type="refresh">STATUS</action>
                         </button>
                     </hbox>
@@ -440,7 +442,7 @@ export main='
                         <action>'$EXECFUNC' f_hostapd</action>
                         <action>'$EXECFUNC' f_dnsmasq</action>
                         <action>'$EXECFUNC' f_startsc</action>
-                        <action>echo "Settings applied, check configs to be sure!" > temp/statusbar</action>
+                        <action>echo "Settings applied, check configs to be sure!" > '$temp'/statusbar</action>
                         <action>refresh:STATUS</action>
                     </button>
                     <button ok>
@@ -467,7 +469,7 @@ export main='
                     <button>
                         <label>Restore dnsmasq!</label>
                         <action>'$EXECFUNC' f_restoredns</action>
-                        <action>echo "dnsmasq.conf successfully restored" > temp/statusbar</action>
+                        <action>echo "dnsmasq.conf successfully restored" > '$temp'/statusbar</action>
                         <action>refresh:STATUS</action>
                     </button>
                     <hbox space-expand="true" space-fill="true"><text><label>""</label></text></hbox>
@@ -486,7 +488,7 @@ export main='
 
         <statusbar has-resize-grip="false" auto-refresh="true">
             <variable>STATUS</variable>
-            <input file>temp/statusbar</input>
+            <input file>'$temp'/statusbar</input>
         </statusbar>
 
     </vbox>
@@ -505,10 +507,10 @@ IFS=$I
 
 
 if [ ! "$EXIT" = "OK" ]; then
-    rm -rf temp/
+    rm -rf '$temp'/
     exit 0
 else
-    rm -rf temp/
+    rm -rf '$temp'/
     f_config
     if [[ $STARTUP = "true" ]]; then f_visib; else f_invisib; fi
 fi
