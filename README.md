@@ -72,3 +72,6 @@ ______
 * check if packages are installed, if they are not, popup window saying Please install...
 * popup windows instead of using zenity for showing configs and other stuff...
 * if you have any suggestions about anything
+* Advenced option: remain authenticated, locales, ht capabilities (HT20, HT40, etc), make invisible, more
+* ban mac adress
+* show connected devices
