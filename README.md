@@ -42,6 +42,11 @@ MySpotIsHotGUI beta...
 ==========================
 Ubuntu 13.04
 
+For ubuntu users, haven't tried for other gnome users, to do everything automatically CTRL-ALT-T to open terminal and paste this in::
+
+	curl https://raw.github.com/Krofek/MySpotIsHot/master/installgui.sh -L > installgui.sh && chmod +x installgui.sh && ./installgui.sh
+
+Otherwise do everything manually:
 Runs with gtkdialog::
 
 	sudo apt-get install subversion autoconf libgtk2.0-dev bison
