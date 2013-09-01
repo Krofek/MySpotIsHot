@@ -14,6 +14,7 @@ mkdir -p ~/.myspot/
 URL="https://github.com/Krofek"
 VERSION=v0.5beta
 EXECFUNC="exec $SHELL -c"
+SHOWDEV="iw dev wlan0 station dump | grep Station"
 
 CHANNELS="<item>$CHANNEL</item>"
 for I in 1 2 3 4 5 6 7 8 9 10 11 12; do CHANNELS=`echo "$CHANNELS<item>$I</item>"`; done
@@ -26,7 +27,7 @@ WLANI=`iwconfig 2>&1 | grep wlan | sed "s/[ \t].*//;/^\(lo\|\)$/d"`
 f_wlani="<item>$WLAN</item>"
 for wlans in $WLANI; do f_wlani=`echo "$f_wlani<item>$wlans</item>"`; done
 
-export service dnsmasq hostapd start EXECFUNC
+export service dnsmasq hostapd start EXECFUNC SHOWDEV
 
 temp=$HOME/.myspot/temp
 rm -rf "$temp"/
@@ -160,16 +161,35 @@ f_init() {
 export -f f_init f_config
 
 f_prereq() {
-    apt-get update && echo "APT updated!" && sleep 1
-    type hostapd >/dev/null 2>&1 && echo "hostapd already installed" && sleep 1 || apt-get install -y hostapd && echo "hostapd installed" && sleep 1
-    type dnsmasq >/dev/null 2>&1 && echo "dnsmasq already installed" && sleep 1 || apt-get install -y dnsmasq && echo "dnsmasq installed" && sleep 1
-    echo "Done! Please close the window!"
+    if ! type hostapd >/dev/null 2>&1 || ! type hostapd >/dev/null 2>&1 || ! type iw >/dev/null 2>&1; then
+        apt-get update && echo "APT updated!" && sleep 1
+        if ! type iw >/dev/null 2>&1; then
+            sudo apt-get install -y iw >/dev/null 2>&1
+            echo "iw installed"
+            sleep 1
+        fi
+        if ! type dnsmasq >/dev/null 2>&1; then
+            sudo apt-get install -y dnsmasq >/dev/null 2>&1
+            echo "dnsmasq installed"
+            sleep 1
+        fi
+        if ! type hostapd >/dev/null 2>&1; then
+            sudo apt-get install -y hostapd >/dev/null 2>&1
+            echo "hostapd installed"
+            sleep 1
+        fi
+        echo "Done! Please close the window!"
+    else
+        echo "All in order, please close the window!"
+        sleep 3
+    fi
 }
 export -f f_prereq
 
 #############################
 #########WINDOWS#############
 #############################
+
 
 export prereq='
 <variable>prereq</variable>
@@ -179,7 +199,7 @@ export prereq='
             <label>Installing needed packages.</label>
         </text>
         <progressbar>
-            <label>Some Text</label>
+            <label>Checking for installed packages!</label>
             <input>'$EXECFUNC' f_prereq</input>
         </progressbar>
     </frame>
@@ -208,9 +228,9 @@ export main='
     <vbox>
         <hbox>
             <vbox>
-                <notebook labels="Settings|Config files">
+                
+                <notebook labels="Settings|Config files|Connected devices">
                     <vbox>
-
                         <vbox space-expand="true" space-fill="true"><text><label>""</label></text></vbox>
                         <hbox>
                             <text><label>SSID name</label></text>
@@ -367,6 +387,17 @@ export main='
                         <hbox space-expand="true" space-fill="true"><text><label>""</label></text></hbox>
                     </vbox>
 
+                    <vbox>
+                        <timer milliseconds="true" interval="200" visible="false">
+                            <action type="refresh">CONNECTED</action>
+                        </timer>
+                        <text><label>""</label></text>
+                        <text name="mono">
+                            <variable>CONNECTED</variable>
+                            <input>'$SHOWDEV'</input>
+                        </text>
+                    </vbox>
+
                 </notebook>
 
 
@@ -489,6 +520,25 @@ export main='
     <variable>main</variable>
 </window>'
 
+export needs='
+<window title="Packages needed!">
+<vbox>
+    <frame Missing packages>
+        <text>
+            <label>There are packages missing needed for MySpotIsHot to run properly!</label>
+        </text>
+        <button>
+            <label>Install now!</label>
+            <action type="launch">prereq</action>
+        </button>
+    </frame>
+    </vbox>
+</window>
+'
+
+if ! type hostapd >/dev/null 2>&1 || ! type hostapd >/dev/null 2>&1 || ! type iw >/dev/null 2>&1; then
+    gtkdialog -p needs --center
+fi
 ########################################################
 ###########################ENDING#######################
 ########################################################

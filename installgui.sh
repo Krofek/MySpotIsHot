@@ -22,7 +22,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
     <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
   </action>
 
-</policyconfig>' | sudo tee -a $potpol
+</policyconfig>' | sudo tee -a $potpol &>/dev/null
 }
 
 f_installer() {
@@ -52,6 +52,11 @@ if [[ $installer = "Y" || $installer = "y" ]]; then
 	sudo rm -rf $HOME/.local/share/applications/myspotishot.desktop
 	echo -e -n "[Desktop Entry]\nComment=Setup and create a WiFi AP\nTerminal=false\nName=MySpotIsHot\nExec=pkexec myspotishot\nType=Application\nIcon=/home/krofek/.myspot/myspoticon.jpg\nCategories=Internet;" > $HOME/.local/share/applications/myspotishot.desktop
 	f_createpolicy
+    rm MySpotIsHotGUI.sh
+    rm myspoticon.jpg
+    echo "Installation finished! Usage: from menu or by typing in terminal: pkexec myspotihot"
+    echo ""
+    echo "Happy WiFi-ing! ;)"
 	break
 elif [[ $installer = "N" || $installer = "n" ]]; then
 	exit
