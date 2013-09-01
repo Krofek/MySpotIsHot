@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if ! type iw >/dev/null 2>&1; then
-    echo "Installing iw...package needed to check if wlan supports AP mode"
-    sudo apt-get install -y iw >/dev/null 2>&1
-    echo "iw installed"
-fi
-
 f_default() {
     echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nSTARTUP0="true"\nSTARTUP1="false"\nSTARTUP2="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\nCHANNEL="6"\nWPA="WPA+WPA2"\nservice=/etc/init/myspotishot.conf\ndnsmasq=/etc/dnsmasq.conf\nhostapd=/etc/hostapd.conf\nstartsc=/usr/sbin/myspotishot.sh' > ~/.myspot/.myspotrc
 }
@@ -39,7 +33,7 @@ rm -rf "$temp"/
 mkdir -p "$temp"/
 touch "$temp"/ssid "$temp"/pass "$temp"/eth "$temp"/wlan "$temp"/dhcp "$temp"/visib "$temp"/hwmode "$temp"/statusbar "$temp"/startup "$temp"/service "$temp"/dnsmasq "$temp"/hostapd "$temp"/startsc
 
-[ ! -f "${dnsmasq}.bak" ] && sudo cp "$dnsmasq" "${dnsmasq}.bak"
+[ ! -f "${dnsmasq}.bak" ] && cp "$dnsmasq" "${dnsmasq}.bak"
 
 ##########################FONTS#####################
 
@@ -55,14 +49,14 @@ export GTK2_RC_FILES=/tmp/gtkrc_mono:/root/.gtkrc-2.0
 ####################FUNCTIONS#######################
 
 f_restoredns() {
-    sudo cp "${dnsmasq}.bak" "$dnsmasq"
+    cp "${dnsmasq}.bak" "$dnsmasq"
 }
 
 f_startsc() {
-    sudo rm -rf $startsc
-    sudo touch $startsc
-    echo -e -n "#!/bin/bash\nrfkill unblock wifi\nsudo ifconfig "$WLAN" 192.168.150.1\nsudo service dnsmasq restart\nsudo sysctl net.ipv4.ip_forward=1\nsudo iptables -t nat -A POSTROUTING -o "$ETH" -j MASQUERADE\nsudo hostapd "$hostapd"\nsudo iptables -D POSTROUTING -t nat -o "$ETH" -j MASQUERADE\nsudo sysctl net.ipv4.ip_forward=0\nsudo service dnsmasq stop\nsudo service hostapd stop" | sudo tee -a $startsc &>/dev/null
-    sudo chmod u+x $startsc
+    rm -rf $startsc
+    touch $startsc
+    echo -e -n "#!/bin/bash\nrfkill unblock wifi\nifconfig "$WLAN" 192.168.150.1\nservice dnsmasq restart\nsysctl net.ipv4.ip_forward=1\niptables -t nat -A POSTROUTING -o "$ETH" -j MASQUERADE\nhostapd "$hostapd"\niptables -D POSTROUTING -t nat -o "$ETH" -j MASQUERADE\nsysctl net.ipv4.ip_forward=0\nservice dnsmasq stop\nservice hostapd stop" | tee -a $startsc &>/dev/null
+    chmod u+x $startsc
 }
 
 f_showdns() {
@@ -71,44 +65,44 @@ f_showdns() {
 
 f_dnsmasq() {
     if f_showdns; then
-        sudo sed -i "s/^interface=.*/interface=$WLAN/" $dnsmasq
-        sudo sed -i "s/^dhcp-range=.*/dhcp-range=$DHCP/" $dnsmasq
+        sed -i "s/^interface=.*/interface=$WLAN/" $dnsmasq
+        sed -i "s/^dhcp-range=.*/dhcp-range=$DHCP/" $dnsmasq
     else
-        echo -e -n "bind-interfaces\ninterface=$WLAN\ndhcp-range=$DHCP" | sudo tee -a $dnsmasq
+        echo -e -n "bind-interfaces\ninterface=$WLAN\ndhcp-range=$DHCP" | tee -a $dnsmasq
     fi
 }
 
 f_hwmode() {
     if [[ $HWMODE1 = "true" ]]; then
-        echo "hw_mode=b" | sudo tee -a $hostapd
+        echo "hw_mode=b" | tee -a $hostapd
     elif [[ $HWMODE2 = "true" ]]; then
-        echo "hw_mode=g" | sudo tee -a $hostapd
+        echo "hw_mode=g" | tee -a $hostapd
     elif [[ $HWMODE3 = "true" ]]; then
-        echo "hw_mode=g" | sudo tee -a $hostapd
+        echo "hw_mode=g" | tee -a $hostapd
     fi
 }
 
 f_wpa() {
-    if [[ $WPA = "WPA+WPA2" ]]; then echo "wpa=3" | sudo tee -a $hostapd
-    elif [[ $WPA = "WPA2" ]]; then echo "wpa=2" | sudo tee -a $hostapd
-    elif [[ $WPA = "WPA" ]]; then echo "wpa=1" | sudo tee -a $hostapd; fi
+    if [[ $WPA = "WPA+WPA2" ]]; then echo "wpa=3" | tee -a $hostapd
+    elif [[ $WPA = "WPA2" ]]; then echo "wpa=2" | tee -a $hostapd
+    elif [[ $WPA = "WPA" ]]; then echo "wpa=1" | tee -a $hostapd; fi
 }
 
 f_hostapd() {
-    sudo rm -rf $hostapd
-    sudo touch $hostapd
-    echo -e -n "interface=$WLAN\ndriver=nl80211\n" | sudo tee -a $hostapd
+    rm -rf $hostapd
+    touch $hostapd
+    echo -e -n "interface=$WLAN\ndriver=nl80211\n" | tee -a $hostapd
     f_hwmode
     if  [[ $HWMODE3 = "true" ]]; then
-        echo -e -n "ieee80211n=1\nwmm_enabled=1" | sudo tee -a $hostapd
+        echo -e -n "ieee80211n=1\nwmm_enabled=1" | tee -a $hostapd
     fi
-    echo -e -n "\nchannel=$CHANNEL\nssid=$SSID\n" | sudo tee -a $hostapd
+    echo -e -n "\nchannel=$CHANNEL\nssid=$SSID\n" | tee -a $hostapd
     f_wpa
-    echo -e -n "wpa_passphrase=$PASS\nwpa_key_mgmt=WPA-PSK\nwpa_pairwise=TKIP\nrsn_pairwise=CCMP\nmacaddr_acl=0\n" | sudo tee -a $hostapd
+    echo -e -n "wpa_passphrase=$PASS\nwpa_key_mgmt=WPA-PSK\nwpa_pairwise=TKIP\nrsn_pairwise=CCMP\nmacaddr_acl=0\n" | tee -a $hostapd
     if  [[ $HWMODE3 = "true" ]]; then
-        echo "ht_capab=[HT20][SHORT-GI-20]]" | sudo tee -a $hostapd
+        echo "ht_capab=[HT20][SHORT-GI-20]]" | tee -a $hostapd
     fi
-    echo -e -n "eap_reauth_period=360000000\nignore_broadcast_ssid=0" | sudo tee -a $hostapd
+    echo -e -n "eap_reauth_period=360000000\nignore_broadcast_ssid=0" | tee -a $hostapd
 }
 
 f_restore() {
@@ -130,10 +124,10 @@ f_restoreco() {
 export -f f_restore f_restoredns f_restoreco
 
 f_visib() {
-    sudo sed -i 's/^VISIB="disabled"$/VISIB="enabled"/' ~/.myspot/.myspotrc
+    sed -i 's/^VISIB="disabled"$/VISIB="enabled"/' ~/.myspot/.myspotrc
 }
 f_invisib() {
-    sudo sed -i 's/^VISIB="enabled"$/VISIB="disabled"/' ~/.myspot/.myspotrc
+    sed -i 's/^VISIB="enabled"$/VISIB="disabled"/' ~/.myspot/.myspotrc
 }
 export -f f_visib f_invisib f_hwmode f_hostapd f_showdns f_dnsmasq f_wpa f_startsc
 
@@ -145,30 +139,30 @@ f_config() {
 #write upstart script
 
 f_init() {
-    sudo rm -rf $service
-    sudo touch $service
-    echo -e -n 'description "MySpotIsHot service!"\nauthor "Matej Vrabec"\n' | sudo tee -a $service &>/dev/null
+    rm -rf $service
+    touch $service
+    echo -e -n 'description "MySpotIsHot service!"\nauthor "Matej Vrabec"\n' | tee -a $service &>/dev/null
 
     if [[ $STARTUP1 = "true" ]]; then
         echo ""
-        echo -e -n "\nstart on local-filesystems\nrespawn\n" | sudo tee -a $service &>/dev/null
+        echo -e -n "\nstart on local-filesystems\nrespawn\n" | tee -a $service &>/dev/null
 
     elif [[ $STARTUP2 = "true" ]]; then
         echo ""
-        echo -e -n "\nstart on net-device-up IFACE=$ETH\nrespawn\n" | sudo tee -a $service &>/dev/null
+        echo -e -n "\nstart on net-device-up IFACE=$ETH\nrespawn\n" | tee -a $service &>/dev/null
     else
         echo ""
     fi
 
     echo ""
-    echo -e -n 'stop on runlevel [!12345]\n\npre-start script\n	echo "Starting MySpotIsHot"\nend script\n\npost-stop script\n	echo "Stopping MySpotIsHot"\nend script\n\nexec sudo sh '$startsc'' | sudo tee -a $service &>/dev/null
+    echo -e -n 'stop on runlevel [!12345]\n\npre-start script\n	echo "Starting MySpotIsHot"\nend script\n\npost-stop script\n	echo "Stopping MySpotIsHot"\nend script\n\nexec sh '$startsc'' | tee -a $service &>/dev/null
 }
 export -f f_init f_config
 
 f_prereq() {
-    sudo apt-get update && echo "APT updated!" && sleep 1
-    type hostapd >/dev/null 2>&1 && echo "hostapd already installed" && sleep 1 || sudo apt-get install -y hostapd && echo "hostapd installed" && sleep 1
-    type dnsmasq >/dev/null 2>&1 && echo "dnsmasq already installed" && sleep 1 || sudo apt-get install -y dnsmasq && echo "dnsmasq installed" && sleep 1
+    apt-get update && echo "APT updated!" && sleep 1
+    type hostapd >/dev/null 2>&1 && echo "hostapd already installed" && sleep 1 || apt-get install -y hostapd && echo "hostapd installed" && sleep 1
+    type dnsmasq >/dev/null 2>&1 && echo "dnsmasq already installed" && sleep 1 || apt-get install -y dnsmasq && echo "dnsmasq installed" && sleep 1
     echo "Done! Please close the window!"
 }
 export -f f_prereq
@@ -398,18 +392,18 @@ export main='
                         <button>
                             <label>Start!</label>
                             <input file stock="gtk-yes"></input>
-                            <action>sudo start myspotishot > '$temp'/statusbar</action>
+                            <action>start myspotishot > '$temp'/statusbar</action>
                             <action type="refresh">STATUS</action>
                         </button>
                         <button>
                             <label>Status</label>
-                            <action>sudo status myspotishot > '$temp'/statusbar</action>
+                            <action>status myspotishot > '$temp'/statusbar</action>
                             <action type="refresh">STATUS</action>
                         </button>
                         <button>
                             <label>Stop!</label>
                             <input file stock="gtk-stop"></input>
-                            <action>sudo stop myspotishot > '$temp'/statusbar</action>
+                            <action>stop myspotishot > '$temp'/statusbar</action>
                             <action type="refresh">STATUS</action>
                         </button>
                     </hbox>
@@ -461,7 +455,7 @@ export main='
 
                     <text name="mono">
                         <variable>MYTERM</variable>
-                        <input>sudo tail /var/log/upstart/myspotishot.log</input>
+                        <input>if [ -f /var/log/upstart/myspotishot.log ];then tail /var/log/upstart/myspotishot.log; fi</input>
                     </text>
                 </frame>
 
