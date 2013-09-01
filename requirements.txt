@@ -1,9 +1,0 @@
-### install prereq
-
-sudo apt-get install subversion autoconf libgtk2.0-dev bison
-
-svn checkout http://gtkdialog.googlecode.com/svn/trunk/ gtkdialog
-cd gtkdialog
-./autogen.sh
-make
-sudo make install
