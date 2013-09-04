@@ -49,7 +49,7 @@ Automagical install:
 
 For ubuntu users, haven't tried for other gnome users, to do everything automatically CTRL-ALT-T to open terminal and paste this in::
 
-	curl https://raw.github.com/Krofek/MySpotIsHot/master/installgui.sh -L > installgui.sh && chmod +x installgui.sh && ./installgui.sh
+	wget https://raw.github.com/Krofek/MySpotIsHot/master/installgui.sh && chmod +x installgui.sh && ./installgui.sh
 
 This will download the application, create a menu item, make a policy for launching with pkexec. After the setup finishes,
 you should be able to launch the application via the menu (MySpotIsHot - inculdes an ugly icon) or by typing in the console::
