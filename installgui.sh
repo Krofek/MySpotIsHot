@@ -31,7 +31,7 @@ read -n 1 installer
 
 if [[ $installer = "Y" || $installer = "y" ]]; then
 	sudo apt-get update
-	sudo apt-get install -y subversion autoconf libgtk2.0-dev bison dnsmasq hostapd iw
+	sudo apt-get install -y subversion autoconf libgtk2.0-dev bison flex dnsmasq hostapd iw
 	
 	if ! type gtkdialog >/dev/null 2>&1; then
 		svn checkout http://gtkdialog.googlecode.com/svn/trunk/ gtkdialog
