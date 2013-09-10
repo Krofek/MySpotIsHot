@@ -50,6 +50,7 @@ if [[ $installer = "Y" || $installer = "y" ]]; then
 	sudo cp MySpotIsHotGUI.sh /usr/bin/myspotishot
 	cp myspoticon.jpg $HOME/.myspot/myspoticon.jpg
 	sudo rm -rf $HOME/.local/share/applications/myspotishot.desktop
+	mkdir $HOME/.local/share/applications
 	echo -e -n "[Desktop Entry]\nComment=Setup and create a WiFi AP\nTerminal=false\nName=MySpotIsHot\nExec=pkexec myspotishot\nType=Application\nIcon=/home/krofek/.myspot/myspoticon.jpg\nCategories=Internet;" > $HOME/.local/share/applications/myspotishot.desktop
 	f_createpolicy
     rm MySpotIsHotGUI.sh
@@ -68,4 +69,3 @@ while :
 do
 	f_installer
 done
-
