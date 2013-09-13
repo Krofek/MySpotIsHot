@@ -86,7 +86,7 @@ MySpotIsHotGUI needs the following packages:
 	* dnsmasq
 	* iw
 
-Either clone the entire folder:
+Either clone the entire repo:
 
 	$ git clone https://github.com/Krofek/MySpotIsHot.git
 
