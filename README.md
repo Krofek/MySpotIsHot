@@ -62,11 +62,19 @@ This should be it.
 Manual install:
 ---------------
 
-Install required packages for compiling and installing gtkdialog::
+Install required packages:
 
-	sudo apt-get install subversion autoconf libgtk2.0-dev bison hostapd dnsmasq
+	form compiling gtkdialog, you'll probably need:
+	* autoconf
+	* libgtk2.0-dev
+	* bison
+	
+GUI needs:
+	* hostapd
+	* dnsmasq
+	* iw
 
-Need to install gtkdialog manually:
+If you need to install gtkdialog manually:
 
 	svn checkout http://gtkdialog.googlecode.com/svn/trunk/ gtkdialog
 	cd gtkdialog
@@ -74,7 +82,20 @@ Need to install gtkdialog manually:
 	make
 	sudo make install
 	
-This way you should launch the GUI as root, since all sudo commands are removed from the script!!
+
+Either clone the entire folder:
+
+	git clone https://github.com/Krofek/MySpotIsHot.git
+
+or download only the GUI script:
+	
+	wget https://raw.github.com/Krofek/MySpotIsHot/master/MySpotIsHotGUI.sh
+	
+
+Run script as root!
+	
+	# sh MySpotIsHotGUI.sh
+
 
 Screenshot:
 
