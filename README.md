@@ -64,15 +64,7 @@ Manual install:
 
 Install required packages:
 
-	form compiling gtkdialog, you'll probably need:
-	* autoconf
-	* libgtk2.0-dev
-	* bison
-	
-GUI needs:
-	* hostapd
-	* dnsmasq
-	* iw
+	* GtkDialog 0.8.3
 
 If you need to install gtkdialog manually:
 
@@ -81,20 +73,33 @@ If you need to install gtkdialog manually:
 	./autogen.sh
 	make
 	sudo make install
+
+Fom compiling and installing gtkdialog, you'll probably need:
+
+	* autoconf
+	* libgtk2.0-dev
+	* bison
 	
+MySpotIsHotGUI needs the following packages:
+
+	* hostapd
+	* dnsmasq
+	* iw
 
 Either clone the entire folder:
 
-	git clone https://github.com/Krofek/MySpotIsHot.git
+	$ git clone https://github.com/Krofek/MySpotIsHot.git
 
-or download only the GUI script:
+
+or download just the GUI script:
 	
 	wget https://raw.github.com/Krofek/MySpotIsHot/master/MySpotIsHotGUI.sh
 	
-
+	
 Run script as root!
 	
 	# sh MySpotIsHotGUI.sh
+
 
 
 Screenshot:
