@@ -30,7 +30,7 @@ for wlans in $WLANI; do f_wlani=`echo "$f_wlani<item>$wlans</item>"`; done
 
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
-COUNTRIES=`cat "country-list-iso-codes.txt"`
+COUNTRIES=`cat "$HOME/.myspot/country-list-iso-codes.txt"`
 f_countries="<item>$COUNTRY</item>"
 for countries in $COUNTRIES; do f_countries=`echo "$f_countries<item>$countries</item>"`; done
 IFS=$SAVEIFS
@@ -331,18 +331,15 @@ export main='
                             <text><label>Choose 802.11x mode</label></text>
                             <radiobutton label="b">
                                 <variable>HWMODE1</variable>
-                                <default>'$HWMODE1'</default>
                                 <input>echo '$HWMODE1'</input>
                             </radiobutton>
                             <radiobutton label="g">
                                 <variable>HWMODE2</variable>
-                                <default>'$HWMODE2'</default>
                                 <input>echo '$HWMODE2'</input>
                                 <input file>'$temp'/hwmode</input>
                             </radiobutton>
                             <radiobutton label="n">
                                 <variable>HWMODE3</variable>
-                                <default>'$HWMODE3'</default>
                                 <input>echo '$HWMODE3'</input>
                             </radiobutton>
                         </hbox>
@@ -363,12 +360,12 @@ export main='
                             <radiobutton label="Filesystem">
                                 <variable>STARTUP1</variable>
                                 <input>echo '$STARTUP1'</input>
-                                <sensitive>'$VISIB'</sensitive>
+                                <sensitive>'$STARTUP'</sensitive>
                             </radiobutton>
                             <radiobutton label="Internet up">
                                 <variable>STARTUP2</variable>
                                 <input>echo '$STARTUP2'</input>
-                                <sensitive>'$VISIB'</sensitive>
+                                <sensitive>'$STARTUP'</sensitive>
                             </radiobutton>
 
                         </hbox>
@@ -379,7 +376,7 @@ export main='
 
                     <hbox>
                     <checkbox>
-                            <default>'$AUTHED'</default>
+                            <input>echo '$AUTHED'</input>
                             <variable>AUTHED</variable>
                              <label>Remain auth [ms]</label>
                             <action>if true enable:AUTH</action>

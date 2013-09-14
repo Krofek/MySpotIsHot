@@ -88,7 +88,7 @@ MySpotIsHotGUI needs the following packages:
 
 Either clone the entire repo:
 
-	$ git clone https://github.com/Krofek/MySpotIsHot.git
+	git clone https://github.com/Krofek/MySpotIsHot.git
 
 
 or download just the GUI script:
