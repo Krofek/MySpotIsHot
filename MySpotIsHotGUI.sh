@@ -1,18 +1,19 @@
 #!/bin/bash
+Encoding=UTF-8
 
 f_default() {
-    echo -e -n 'SSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nSTARTUP0="true"\nSTARTUP1="false"\nSTARTUP2="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\nCHANNEL="6"\nWPA="WPA+WPA2"\nservice=/etc/init/myspotishot.conf\ndnsmasq=/etc/dnsmasq.conf\nhostapd=/etc/hostapd.conf\nstartsc=/usr/sbin/myspotishot.sh' > ~/.myspot/.myspotrc
+    echo -e -n 'BROADCAST="false"\nUSECOUNTRY="false"\nAUTHED="false"\nAUTH="3600000"\nSSID="ssid"\nPASS="password"\nETH="eth0"\nWLAN="wlan0"\nDHCP="192.168.150.2,192.168.150.10"\nSTARTUP="false"\nSTARTUP0="true"\nSTARTUP1="false"\nSTARTUP2="false"\nVISIB="disabled"\nHWMODE1="false"\nHWMODE2="true"\nHWMODE3="false"\nCHANNEL="6"\nWPA="WPA+WPA2"\nservice=/etc/init/myspotishot.conf\ndnsmasq=/etc/dnsmasq.conf\nhostapd=/etc/hostapd.conf\nstartsc=/usr/sbin/myspotishot.sh' > ~/.myspot/.myspotrc
 }
 export -f f_default
 
 ###############STARTUP########################
 
-mkdir -p ~/.myspot/
-[ ! -s ~/.myspot/.myspotrc ] && f_default
+mkdir -p $HOME/.myspot/
+[ ! -s $HOME/.myspot/.myspotrc ] && f_default
 . $HOME/.myspot/.myspotrc
 
 URL="https://github.com/Krofek"
-VERSION=v0.5beta
+VERSION=v1.0
 EXECFUNC="exec $SHELL -c"
 SHOWDEV="iw dev wlan0 station dump | grep Station"
 
@@ -26,6 +27,14 @@ for eths in $ETHI; do f_ethi=`echo "$f_ethi<item>$eths</item>"`; done
 WLANI=`iwconfig 2>&1 | grep wlan | sed "s/[ \t].*//;/^\(lo\|\)$/d"`
 f_wlani="<item>$WLAN</item>"
 for wlans in $WLANI; do f_wlani=`echo "$f_wlani<item>$wlans</item>"`; done
+
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+COUNTRIES=`cat "country-list-iso-codes.txt"`
+f_countries="<item>$COUNTRY</item>"
+for countries in $COUNTRIES; do f_countries=`echo "$f_countries<item>$countries</item>"`; done
+IFS=$SAVEIFS
+
 
 export service dnsmasq hostapd start EXECFUNC SHOWDEV
 
@@ -89,6 +98,21 @@ f_wpa() {
     elif [[ $WPA = "WPA" ]]; then echo "wpa=1" | tee -a $hostapd; fi
 }
 
+f_auth() {
+    if [[ $AUTHED = "true" ]]; then echo "eap_reauth_period=$AUTH" | tee -a $hostapd; fi
+}
+
+f_country() {
+    if [[ $USECOUNTRY = "true" ]];then
+        COCODE=`echo $COUNTRY | cut -c 1-2`
+        echo "country_code=$COCODE" | tee -a $hostapd
+    fi
+}
+
+f_broadcast() {
+    if [[ $BROADCAST = "true" ]]; then echo "ignore_broadcast_ssid=2" | tee -a $hostapd; fi
+}
+
 f_hostapd() {
     rm -rf $hostapd
     touch $hostapd
@@ -103,7 +127,9 @@ f_hostapd() {
     if  [[ $HWMODE3 = "true" ]]; then
         echo "ht_capab=[HT20][SHORT-GI-20]]" | tee -a $hostapd
     fi
-    echo -e -n "eap_reauth_period=360000000\nignore_broadcast_ssid=0" | tee -a $hostapd
+    f_auth
+    f_country
+    f_broadcast
 }
 
 f_restore() {
@@ -122,19 +148,13 @@ f_restoreco() {
     echo "/etc/hostapd.conf" > "$temp"/hostapd
     echo "/usr/sbin/myspotishot.sh" > "$temp"/startsc
 }
-export -f f_restore f_restoredns f_restoreco
+export -f f_restore f_restoredns f_restoreco f_auth f_country f_broadcast
 
-f_visib() {
-    sed -i 's/^VISIB="disabled"$/VISIB="enabled"/' ~/.myspot/.myspotrc
-}
-f_invisib() {
-    sed -i 's/^VISIB="enabled"$/VISIB="disabled"/' ~/.myspot/.myspotrc
-}
-export -f f_visib f_invisib f_hwmode f_hostapd f_showdns f_dnsmasq f_wpa f_startsc
+export -f f_hwmode f_hostapd f_showdns f_dnsmasq f_wpa f_startsc
 
 #write config
 f_config() {
-    echo -e -n "SSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0=\"$STARTUP0\"\nSTARTUP1=\"$STARTUP1\"\nSTARTUP2=\"$STARTUP2\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"\nservice="$service"\ndnsmasq="$dnsmasq"\nhostapd="$hostapd"\nstartsc="$startsc"" > ~/.myspot/.myspotrc
+    echo -e -n "BROADCAST=\"$BROADCAST\"\nUSECOUNTRY=\"$USECOUNTRY\"\nCOUNTRY=\"$COUNTRY\"\nAUTH=\"$AUTH\"\nAUTHED=\"$AUTHED\"\nSSID=\"$SSID\"\nPASS=\"$PASS\"\nETH=\"$ETH\"\nWLAN=\"$WLAN\"\nDHCP=\"$DHCP\"\nVISIB=\"$VISIB\"\nSTARTUP=\"$STARTUP\"\nSTARTUP0=\"$STARTUP0\"\nSTARTUP1=\"$STARTUP1\"\nSTARTUP2=\"$STARTUP2\"\nHWMODE1=\"$HWMODE1\"\nHWMODE2=\"$HWMODE2\"\nHWMODE3=\"$HWMODE3\"\nCHANNEL=\"$CHANNEL\"\nWPA=\"$WPA\"\nservice="$service"\ndnsmasq="$dnsmasq"\nhostapd="$hostapd"\nstartsc="$startsc"" > ~/.myspot/.myspotrc
 }
 
 #write upstart script
@@ -142,23 +162,34 @@ f_config() {
 f_init() {
     rm -rf $service
     touch $service
-    echo -e -n 'description "MySpotIsHot service!"\nauthor "Matej Vrabec"\n' | tee -a $service &>/dev/null
+    echo -e -n 'description "MySpotIsHot service!"\nauthor "Matej Vrabec"\n\n' | tee -a $service &>/dev/null
 
-    if [[ $STARTUP1 = "true" ]]; then
+    if [[ $STARTUP = "true" && $STARTUP1 = "true" ]]; then
         echo ""
-        echo -e -n "\nstart on local-filesystems\nrespawn\n" | tee -a $service &>/dev/null
+        echo -e -n "start on local-filesystems\nrespawn\n" | tee -a $service &>/dev/null
 
-    elif [[ $STARTUP2 = "true" ]]; then
+    elif [[ $STARTUP = "true" && $STARTUP2 = "true" ]]; then
         echo ""
-        echo -e -n "\nstart on net-device-up IFACE=$ETH\nrespawn\n" | tee -a $service &>/dev/null
-    else
-        echo ""
+        echo -e -n "start on net-device-up IFACE=$ETH\nrespawn\n" | tee -a $service &>/dev/null
     fi
 
     echo ""
     echo -e -n 'stop on runlevel [!12345]\n\npre-start script\n	echo "Starting MySpotIsHot"\nend script\n\npost-stop script\n	echo "Stopping MySpotIsHot"\nend script\n\nexec sh '$startsc'' | tee -a $service &>/dev/null
 }
 export -f f_init f_config
+
+f_checkap() {
+    if [[ $(iw list | grep modes: -A 10) =~ "AP" ]]; then
+        echo '<text><label>Choose wlan adapter</label></text>
+         <combobox width-request="100">
+         <variable>WLAN</variable>
+         '$f_wlani'
+         </combobox>'
+    else
+       echo '<text><label>AP mode not available!</label></text>'
+    fi
+}
+export -f f_checkap
 
 f_prereq() {
     if ! type hostapd >/dev/null 2>&1 || ! type hostapd >/dev/null 2>&1 || ! type iw >/dev/null 2>&1; then
@@ -321,36 +352,71 @@ export main='
                             <checkbox>
                                 <label>""</label>
                                 <variable>STARTUP</variable>
-                                <default>'$STARTUP'</default>
+                                <input>echo '$STARTUP'</input>
                                 <action>if true enable:STARTUP1</action>
                                 <action>if true enable:STARTUP2</action>
                                 <action>if false disable:STARTUP1</action>
                                 <action>if false disable:STARTUP2</action>
-                                <action>if false echo "true" > '$temp'/startup</action>
-                                <action>refresh:STARTUP0</action>
                                 <action>refresh:STARTUP1</action>
                                 <action>refresh:STARTUP2</action>
                             </checkbox>
-                            <radiobutton label="None" visible="false">
-                                <variable>STARTUP0</variable>
-                                <input>echo '$STARTUP0'</input>
-                                <input file>'$temp'/startup</input>
-                            </radiobutton>
                             <radiobutton label="Filesystem">
                                 <variable>STARTUP1</variable>
-                                <default>'$STARTUP1'</default>
-                                <visible>'$VISIB'</visible>
+                                <input>echo '$STARTUP1'</input>
+                                <sensitive>'$VISIB'</sensitive>
                             </radiobutton>
                             <radiobutton label="Internet up">
                                 <variable>STARTUP2</variable>
-                                <default>'$STARTUP2'</default>
-                                <visible>'$VISIB'</visible>
+                                <input>echo '$STARTUP2'</input>
+                                <sensitive>'$VISIB'</sensitive>
                             </radiobutton>
 
                         </hbox>
 
                     </vbox>
                     <vbox>
+ <hbox space-expand="true" space-fill="true"><text><label>""</label></text></hbox>
+
+                    <hbox>
+                    <checkbox>
+                            <default>'$AUTHED'</default>
+                            <variable>AUTHED</variable>
+                             <label>Remain auth [ms]</label>
+                            <action>if true enable:AUTH</action>
+                            <action>if false disable:AUTH</action>
+                            <action>refresh:AUTH</action>
+                            </checkbox>
+                            <entry>
+                                <variable>AUTH</variable>
+                                <input>echo '$AUTH'</input>
+                            <sensitive>'$AUTHED'</sensitive>
+                            </entry>
+                            </hbox>
+                            <hbox>
+                           <checkbox>
+                           <input>echo '$USECOUNTRY'</input>
+                           <label>Use country code</label>
+                           <variable>USECOUNTRY</variable>
+                            <action>if true enable:COUNTRY</action>
+                            <action>if false disable:COUNTRY</action>
+                            <action>refresh:COUNTRY</action>
+                            </checkbox>
+                            <combobox>
+                                <variable>COUNTRY</variable>
+                                '$f_countries'
+                            <sensitive>'$USECOUNTRY'</sensitive>
+                            </combobox>
+                            </hbox>
+                            <hbox>
+                            <checkbox>
+                            <label>Make AP invisible</label>
+                            <variable>BROADCAST</variable>
+                            <input>echo '$BROADCAST'</input>
+                            </checkbox>
+                            <hbox space-expand="true" space-fill="true"><text><label>""</label></text>
+                            </hbox>
+                            </hbox>
+
                         <hbox space-expand="true" space-fill="true"><text><label>""</label></text></hbox>
                         <hbox>
                             <text width-request="100"><label>Start script</label></text>
@@ -520,25 +586,6 @@ export main='
     <variable>main</variable>
 </window>'
 
-export needs='
-<window title="Packages needed!">
-<vbox>
-    <frame Missing packages>
-        <text>
-            <label>There are packages missing needed for MySpotIsHot to run properly!</label>
-        </text>
-        <button>
-            <label>Install now!</label>
-            <action type="launch">prereq</action>
-        </button>
-    </frame>
-    </vbox>
-</window>
-'
-
-if ! type hostapd >/dev/null 2>&1 || ! type hostapd >/dev/null 2>&1 || ! type iw >/dev/null 2>&1; then
-    gtkdialog -p needs --center
-fi
 ########################################################
 ###########################ENDING#######################
 ########################################################
@@ -556,6 +603,5 @@ if [ ! "$EXIT" = "OK" ]; then
 else
     rm -rf '$temp'/
     f_config
-    if [[ $STARTUP = "true" ]]; then f_visib; else f_invisib; fi
 fi
 
