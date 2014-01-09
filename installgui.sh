@@ -51,17 +51,13 @@ if [[ $installer = "Y" || $installer = "y" ]]; then
 	cp myspoticon.jpg $HOME/.myspot/myspoticon.jpg
 	sudo rm -rf $HOME/.local/share/applications/myspotishot.desktop
 	mkdir $HOME/.local/share/applications
-<<<<<<< HEAD
-	echo -e -n "[Desktop Entry]\nComment=Setup and create a WiFi AP\nTerminal=false\nName=MySpotIsHot\nExec=pkexec myspotishot\nType=Application\nIcon=$HOME/.myspot/myspoticon.jpg\nCategories=Internet;" > $HOME/.local/share/applications/myspotishot.desktop
-=======
 	echo -e -n "[Desktop Entry]\nComment=Setup and create a WiFi AP\nTerminal=false\nName=MySpotIsHot\nExec=pkexec myspotishot\nType=Application\nIcon="$HOME"/.myspot/myspoticon.jpg\nCategories=Internet;" > $HOME/.local/share/applications/myspotishot.desktop
->>>>>>> 9f15f2f002e7e894eda1824044b455a57235aebf
 	f_createpolicy
-    rm MySpotIsHotGUI.sh
-    rm myspoticon.jpg
-    echo "Installation finished! Usage: from menu or by typing in terminal: pkexec myspotihot"
-    echo ""
-    echo "Happy WiFi-ing! ;)"
+    	rm MySpotIsHotGUI.sh
+    	rm myspoticon.jpg
+	echo "Installation finished! Usage: from menu or by typing in terminal: pkexec myspotihot"
+	echo ""
+	echo "Happy WiFi-ing! ;)"
 	break
 elif [[ $installer = "N" || $installer = "n" ]]; then
 	exit
