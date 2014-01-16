@@ -60,6 +60,8 @@ if [[ $installer = "Y" || $installer = "y" ]]; then
 	f_createpolicy
     	rm MySpotIsHotGUI.sh
     	rm myspoticon.jpg
+        rm country-list-iso-codes.txt
+        rm installgui.sh
 	echo "Installation finished! Usage: from menu or by typing in terminal: pkexec myspotihot"
 	echo ""
 	echo "Happy WiFi-ing! ;)"
