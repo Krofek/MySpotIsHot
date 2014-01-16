@@ -30,9 +30,12 @@ echo "Welcome to the MySpotIsHot installer. Press Y to continue or N to abort!"
 read -n 1 installer
 
 if [[ $installer = "Y" || $installer = "y" ]]; then
-	sudo apt-get update
-	sudo apt-get install -y subversion autoconf libgtk2.0-dev bison flex dnsmasq hostapd iw
-	
+    if dpkg -s subversion autoconf libgtk2.0-dev bison flex dnsmasq hostapd iw &>/dev/null; then
+        echo "Required packages are installed!"
+    else
+        sudo apt-get update
+        sudo apt-get install -y subversion autoconf libgtk2.0-dev bison flex dnsmasq hostapd iw
+    fi
 	if ! type gtkdialog >/dev/null 2>&1; then
 		svn checkout http://gtkdialog.googlecode.com/svn/trunk/ gtkdialog
 		cd gtkdialog
