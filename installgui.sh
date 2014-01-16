@@ -47,11 +47,13 @@ if [[ $installer = "Y" || $installer = "y" ]]; then
 	
 	wget https://raw.github.com/Krofek/MySpotIsHot/master/MySpotIsHotGUI.sh && chmod +x MySpotIsHotGUI.sh
 	wget https://raw.github.com/Krofek/MySpotIsHot/master/myspoticon.jpg
+    wget https://raw.github.com/Krofek/MySpotIsHot/master/country-list-iso-codes.txt
 	sudo cp MySpotIsHotGUI.sh /usr/bin/myspotishot
-	cp myspoticon.jpg $HOME/.myspot/myspoticon.jpg
-	sudo rm -rf $HOME/.local/share/applications/myspotishot.desktop
-	mkdir $HOME/.local/share/applications
-	echo -e -n "[Desktop Entry]\nComment=Setup and create a WiFi AP\nTerminal=false\nName=MySpotIsHot\nExec=pkexec myspotishot\nType=Application\nIcon="$HOME"/.myspot/myspoticon.jpg\nCategories=Internet;" > $HOME/.local/share/applications/myspotishot.desktop
+	cp myspoticon.jpg ~/.myspot/myspoticon.jpg
+    cp country-list-iso-codes.txt ~/.myspot/
+	sudo rm -rf ~/.local/share/applications/myspotishot.desktop
+	mkdir ~/.local/share/applications
+	echo -e -n "[Desktop Entry]\nComment=Setup and create a WiFi AP\nTerminal=false\nName=MySpotIsHot\nExec=pkexec myspotishot\nType=Application\nIcon=~/.myspot/myspoticon.jpg\nCategories=Internet;" > ~/.local/share/applications/myspotishot.desktop
 	f_createpolicy
     	rm MySpotIsHotGUI.sh
     	rm myspoticon.jpg
