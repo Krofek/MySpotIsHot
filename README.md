@@ -1,5 +1,5 @@
-MySpotIsHot
-===========
+MySpotIsHot (linux)
+===================
 
 WiFi hotspot setup script for Ubuntu 12.10+
 
@@ -37,6 +37,14 @@ ______
 * check for available wlan adapters and choose one
 * check for ethernet adapter connecting to the internet
 * tbd
+
+MySpotIsHot (Windows 8+)
+===================
+
+Download MySpotIsHot.bat
+
+Right click, run as Administrator and follow the setup instructions. It should guide you through :).
+
 
 MySpotIsHotGUI beta...
 ==========================
