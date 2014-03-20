@@ -1,3 +1,9 @@
+TO DO!!!
+--------
+
+Need to change linux versions from Upstart to just running the script or using init.d instead. Too many conflicts with Canonical's Upstart...
+
+
 MySpotIsHot (linux)
 ===================
 
