@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+#KOMMMEENT
 potpol=/usr/share/polkit-1/actions/org.freedesktop.pkexec.myspotishot.policy
 
 f_createpolicy() {
